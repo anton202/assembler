@@ -13,6 +13,15 @@ char *addExtentitonToFileName(char *fileName)
     return strcat(fileNameWithExtantion, ".as");
 }
 
+static int checkForFileExtention(char *fileName)
+{
+    if (strchr(fileName, '.') != NULL)
+    {
+        return 1;
+    }
+    return 0;
+}
+
 /*
 Thia function checks if a file can be opend and that it has .as extention.
 return -1 if error opening the file otherwise returns 1
@@ -24,8 +33,17 @@ int checkFiles(int length, char **fileNames)
 
     for (; i < length; i++)
     {
-        char *fileNameWithAsExtention = addExtentitonToFileName(*(fileNames + i));
+        char *fileNameWithAsExtention = NULL;
+
+        if (checkForFileExtention(*(fileNames + i)))
+        {
+            printf("\nError: Please enter file name without extention.\n");
+            return -1;
+        }
+
+        fileNameWithAsExtention = addExtentitonToFileName(*(fileNames + i));
         fp = fopen(fileNameWithAsExtention, "r");
+
         if (fp == NULL)
         {
             printf("Error: File %s, cant be opend. make sure that the file: %s exist and has .as extention\n", *(fileNames + i), *(fileNames + i));

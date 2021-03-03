@@ -7,6 +7,12 @@
 
 #define MAX_SYMBOL_LENGTH 31
 
+/*
+check if first input in the given lne is a symbol decleration.
+if its a symbol decleration, the function saves the symbol and advances the line pointer
+to the end of the decleration.
+return: NULL if no symbol decleration otherwise retrun the symbol.
+*/
 char *isSymbol(char *line, int *lineIndex)
 {
     int c, i = 0;
@@ -62,7 +68,19 @@ int isSymbolValid(char *symbol, int lineNumber)
         free(symbol);
         return 0;
     }
-    if (isdigit(symbol))
+    if (!isalpha(*symbol))
+    {
+        printf("\nline number: %d Error: symbol name must start with an alphabetic letter.", lineNumber);
+        free(symbol);
+        return 0;
+    }
+    if (!strcmp(symbol, "data") || !strcmp(symbol, "string") || !strcmp(symbol, "entry") || !strcmp(symbol, "extern"))
+    {
+        printf("line number: %d Error: %s is a saved word in assembly", lineNumber, symbol);
+        free(symbol);
+        return 0;
+    }
+    if (isdigit(*symbol))
     {
         printf("\nline number: %d Error: symbol name can`t begin with a digit.", lineNumber);
         free(symbol);
@@ -84,7 +102,8 @@ int isSymbolValid(char *symbol, int lineNumber)
     if (searchRegisterName(symbol))
     {
         printf("line number: %d Error: symbol name can`t be saved register name", lineNumber);
+        free(symbol);
+        return 0;
     }
     return 1;
-    /*check if symbol is not register name*/
 }

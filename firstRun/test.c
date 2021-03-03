@@ -31,9 +31,10 @@ int main(int argc, char *argv[]){
         if(symbol != NULL)
         {
             printf("the symbol is: %s \n",symbol);
+            isSymbolValid(symbol,1);
             
         }
-        printf("line index: %d\n",lineIndex);
+        printf("\nline index: %d\n",lineIndex);
     }
 
     return 1;

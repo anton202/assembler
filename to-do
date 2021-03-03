@@ -1,3 +1,11 @@
-Test isSymbolValid function. make sure that you coverd all saved words in the given assembly.
 
 In checkFiles function, handle: if user enter file name with extention.
+
+
+
+
+
+
+
+Maybe if enough time:
+create header file with all the saved words in the given assembly.
