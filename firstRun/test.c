@@ -9,6 +9,7 @@ int main(int argc, char *argv[]){
     int lineReadStatus;
     char *symbol;
     int lineIndex = 0;
+    int isDataDirective;
 
     if (argc == 1)
     {
@@ -34,6 +35,11 @@ int main(int argc, char *argv[]){
             isSymbolValid(symbol,1);
             
         }
+        printf("\nline index: %d\n",lineIndex);
+
+        isDataDirective = checkIfDataDirective(line, &lineIndex);
+        printf("is data directive: %d\n",isDataDirective);
+
         printf("\nline index: %d\n",lineIndex);
     }
 

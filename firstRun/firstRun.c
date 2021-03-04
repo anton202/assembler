@@ -25,7 +25,7 @@ char *isSymbol(char *line, int *lineIndex)
     {
         k++;
     }
-
+    /*add && != EOF becuse you might get a file that containes only one word*/
     while ((c = *(line + k)) != ' ' && c != ':')
     {
         i++;
@@ -106,4 +106,44 @@ int isSymbolValid(char *symbol, int lineNumber)
         return 0;
     }
     return 1;
+}
+
+int checkIfDataDirective(char *line, int *lineIndex)
+{
+    int i = *lineIndex;
+    int c, k = 0;
+    char data[7];
+
+    while (isspace(*(line + i)))
+    {
+        i++;
+    }
+
+    if (*(line + i) != '.')
+    {
+
+        return -1;
+    }
+
+    while ((c = *(line + i)) != ' ' && c != EOF && k < 7)
+    {
+        data[k] = c;
+        i++;
+        k++;
+    }
+    data[k] = '\0';
+
+    if (!strcmp(".data", data))
+    {
+        *lineIndex = i;
+        return 0;
+    }
+
+    if (!strcmp(".string", data))
+    {
+        *lineIndex = i;
+        return 1;
+    }
+
+    return -1;
 }

@@ -1,6 +1,7 @@
 
-In checkFiles function, handle: if user enter file name with extention.
-
+create: createDataNOde function
+        convert number to binary.
+        convert string to binary.
 
 
 
