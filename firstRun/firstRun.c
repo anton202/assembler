@@ -5,10 +5,13 @@
 #include "../tables/tables.h"
 #include "../tables/symbolTable/symbolTable.h"
 
+#define MAX_NUMBER 2047
+#define MIN_NUMBER -2047
+#define NUMBER_LENGTH 4
 #define MAX_SYMBOL_LENGTH 31
 
 /*
-check if first input in the given lne is a symbol decleration.
+check if first input in the given line is a symbol decleration.
 if its a symbol decleration, the function saves the symbol and advances the line pointer
 to the end of the decleration.
 return: NULL if no symbol decleration otherwise retrun the symbol.
@@ -108,6 +111,10 @@ int isSymbolValid(char *symbol, int lineNumber)
     return 1;
 }
 
+/*
+This function checks if there is .data / .string directive in the curent line.
+return: returns 0 if .data, returns 1 if .string.
+*/
 int checkIfDataDirective(char *line, int *lineIndex)
 {
     int i = *lineIndex;
@@ -146,4 +153,67 @@ int checkIfDataDirective(char *line, int *lineIndex)
     }
 
     return -1;
+}
+
+int checkDataFormat(char *line, int *lineIndex, int *saveNumber, int lineNumber)
+{
+    int c, i = *lineIndex;
+    int k = 0;
+    char numberString[NUMBER_LENGTH + 2];
+    int number;
+
+    while (isspace(*(line + i)))
+    {
+        i++;
+    }
+
+    if ((c = *(line + i)) != '-' && c != '+' && !isdigit(c))
+    {
+        printf("line number: %d Error: Iligal start of number", lineNumber);
+        return 0;
+    }
+
+    numberString[k] = c;
+    k++;
+    i++;
+
+    while ((c = *(line + i)) != ' ' && c != ',' && c != '\0')
+    {
+        if (!isdigit(c))
+        {
+            printf("\n%d\n", c);
+            printf("line number:%d Error: not a ligal number", lineNumber);
+            return 0;
+        }
+
+        if (k > (NUMBER_LENGTH + 1))
+        {
+            printf("line number: %d Error: Number is to long ", lineNumber);
+            return 0;
+        }
+
+        numberString[k++] = c;
+        i++;
+    }
+
+    numberString[k] = '\0';
+    number = atoi(numberString);
+
+    if (number > MAX_NUMBER || number < MIN_NUMBER)
+    {
+        printf("line number: %d Error: Number is to big or to small. max number allowed is: %d, min number allowed is:%d ", lineNumber, MAX_NUMBER, MIN_NUMBER);
+        return 0;
+    }
+
+    if (c == '\0')
+    {
+        *lineIndex = i;
+        *saveNumber = number;
+        return 0;
+    }
+
+    *lineIndex = i;
+    *saveNumber = number;
+
+    return 1;
 }

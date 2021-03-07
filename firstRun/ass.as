@@ -1,1 +1,1 @@
-    		str:    	.data 4,5,6
+   STR: .data 5   ,  -6           ,   ,7

@@ -10,6 +10,7 @@ int main(int argc, char *argv[]){
     char *symbol;
     int lineIndex = 0;
     int isDataDirective;
+    int c, number;
 
     if (argc == 1)
     {
@@ -38,7 +39,22 @@ int main(int argc, char *argv[]){
         printf("\nline index: %d\n",lineIndex);
 
         isDataDirective = checkIfDataDirective(line, &lineIndex);
-        printf("is data directive: %d\n",isDataDirective);
+        if(!isDataDirective)
+        {
+            if(!checkIfSemicolon(line,&lineIndex))
+            {
+                while((c = checkDataFormat(line,&lineIndex,&number,1)) != 0)
+                {
+                    if(!checkIfSemicolon(line,&lineIndex))
+                    {
+                        printf("Error: number parameters should be seperated by ','");
+                        return 0;
+                    }
+                    printf("\n%d\n",number);
+                }
+                 printf("\n%d\n",number);
+            }
+        }
 
         printf("\nline index: %d\n",lineIndex);
     }

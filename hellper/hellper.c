@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 #define LINE_LENGTH 80
 
 /*
@@ -28,5 +29,25 @@ int readLine(char *arr, FILE *fp,int lineNum)
             return EOF;
         }
         *arr = '\0';
+    return 0;
+}
+
+
+int  checkIfSemicolon(char *line, int *lineIndex)
+{
+    int i = *lineIndex;
+
+    while(isspace(*(line + i)))
+    {
+        i++;
+    }
+
+    if(*(line + i) == ',')
+    {
+        *lineIndex = ++i; 
+        return 1;
+    }
+
+    *lineIndex = i; 
     return 0;
 }
