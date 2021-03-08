@@ -155,12 +155,23 @@ int checkIfDataDirective(char *line, int *lineIndex)
     return -1;
 }
 
+/*
+This function gets the data from a given line and check if data is valid.
+if data is valid it saves it to a give pointer.
+return: 0 if error otherwise return 1.
+*/
 int checkDataFormat(char *line, int *lineIndex, int *saveNumber, int lineNumber)
 {
     int c, i = *lineIndex;
     int k = 0;
     char numberString[NUMBER_LENGTH + 2];
     int number;
+
+    if(*(line + i) == '\0')
+    {
+        printf("\nline number: %d Error: .data line defenition can`t end with:\'%c\'\n",lineNumber,*(line + (i - 1)));
+        return 0;
+    }
 
     while (isspace(*(line + i)))
     {
@@ -181,14 +192,17 @@ int checkDataFormat(char *line, int *lineIndex, int *saveNumber, int lineNumber)
     {
         if (!isdigit(c))
         {
-            printf("\n%d\n", c);
-            printf("line number:%d Error: not a ligal number", lineNumber);
+            numberString[k++] = c;
+            numberString[k] = '\0';
+            printf("line number:%d Error: %s not a ligal number", lineNumber, numberString);
             return 0;
         }
 
         if (k > (NUMBER_LENGTH + 1))
         {
-            printf("line number: %d Error: Number is to long ", lineNumber);
+            numberString[k++] = c;
+            numberString[k] = '\0';
+            printf("line number: %d Error: Number: %s is to long ", lineNumber, numberString);
             return 0;
         }
 
@@ -201,7 +215,7 @@ int checkDataFormat(char *line, int *lineIndex, int *saveNumber, int lineNumber)
 
     if (number > MAX_NUMBER || number < MIN_NUMBER)
     {
-        printf("line number: %d Error: Number is to big or to small. max number allowed is: %d, min number allowed is:%d ", lineNumber, MAX_NUMBER, MIN_NUMBER);
+        printf("line number: %d Error: Number %d is to big or to small. max number allowed is: %d, min number allowed is:%d ", lineNumber, number, MAX_NUMBER, MIN_NUMBER);
         return 0;
     }
 

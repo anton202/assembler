@@ -3,7 +3,8 @@
 #include "../hellper/hellper.h"
 #include "../utility/utility.h"
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
     char line[80];
     FILE *fp;
     int lineReadStatus;
@@ -18,45 +19,50 @@ int main(int argc, char *argv[]){
         return 0;
     }
 
-    if(checkFiles(argc,argv) == -1)
+    if (checkFiles(argc, argv) == -1)
     {
         return 0;
     }
-    
-    fp = fopen(addExtentitonToFileName(argv[1]),"r");
-    lineReadStatus = readLine(line,fp,1);
 
-    if(lineReadStatus != 1)
+    fp = fopen(addExtentitonToFileName(argv[1]), "r");
+    lineReadStatus = readLine(line, fp, 1);
+
+    if (lineReadStatus != 1)
     {
-        
-        symbol = isSymbol(line,&lineIndex);
-        if(symbol != NULL)
+
+        symbol = isSymbol(line, &lineIndex);
+        if (symbol != NULL)
         {
-            printf("the symbol is: %s \n",symbol);
-            isSymbolValid(symbol,1);
-            
+            printf("the symbol is: %s \n", symbol);
+            isSymbolValid(symbol, 1);
         }
-        printf("\nline index: %d\n",lineIndex);
+        printf("\nline index: %d\n", lineIndex);
 
         isDataDirective = checkIfDataDirective(line, &lineIndex);
-        if(!isDataDirective)
+        if (!isDataDirective)
         {
-            if(!checkIfSemicolon(line,&lineIndex))
+            if (!checkIfSemicolon(line, &lineIndex))
             {
-                while((c = checkDataFormat(line,&lineIndex,&number,1)) != 0)
+                while ((c = checkDataFormat(line, &lineIndex, &number, 1)) != 0)
                 {
-                    if(!checkIfSemicolon(line,&lineIndex))
+                    /* save the number that checkDataFormat got*/
+                    
+                    if (!checkIfSemicolon(line, &lineIndex))
                     {
                         printf("Error: number parameters should be seperated by ','");
                         return 0;
                     }
-                    printf("\n%d\n",number);
+                    printf("\n%d\n", number);
                 }
-                 printf("\n%d\n",number);
+                printf("\n%d\n", number);
+            }
+            else
+            { 
+                printf("Error: semicoln not allowd between .data and the first argument");
             }
         }
 
-        printf("\nline index: %d\n",lineIndex);
+        printf("\nline index: %d\n", lineIndex);
     }
 
     return 1;

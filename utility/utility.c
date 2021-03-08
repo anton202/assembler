@@ -56,3 +56,65 @@ int checkFiles(int length, char **fileNames)
 
     return 1;
 }
+
+char *convertToBinary(int number)
+{
+    int i = 11;
+    char *numArray = (char *)malloc(12);
+
+    if(numArray == NULL){
+        printf("Error: allocating memory space");
+        exit(0);
+    }
+
+    do
+    {
+        numArray[i] = number % 2;
+        i--;
+    } while ((number /= 2) > 0);
+
+    return numArray;
+}
+
+char *twosComplement(char *number)
+{
+    int numberLength = 12;
+    int i = 0;
+
+    for (; i < numberLength; i++)
+    {
+        if(number[i] == 0)
+        {
+            number[i] = 1;
+        }
+        else
+        {
+            number[i] = 0;
+        }
+    }
+
+    for(i = 11; i >= 0; i--)
+    {
+        if(number[i] == 0)
+        {
+            number[i] = 1;
+            return number;
+        }
+        else{
+            number[i] = 0;
+        }
+    }
+    return number;
+
+}
+
+char *convertNumberToBinary(int number){
+    char *pNumber = NULL;
+
+    if(number > 0)
+    {
+        return convertToBinary(number);
+    }
+    pNumber = convertToBinary(-(number));
+    return twosComplement(pNumber);
+}
