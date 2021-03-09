@@ -1,12 +1,15 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include "machineCode.h"
+#include "../utility/utility.h"
 
 int DC = 0;
 Data *head = NULL;
 
-Data *addData(Data *data)
+Data *addData(int number)
 {
     Data *node = head;
+    Data *dataNode = createDataNode(number);
 
     /*
         if((DC + getCodeCounter()) > 4095)
@@ -18,9 +21,9 @@ Data *addData(Data *data)
 
     if(head == NULL)
     {
-        head = data;
+        head = dataNode;
         DC++;
-        return data;
+        return head;
     }
 
     while (node->next != NULL)
@@ -28,9 +31,19 @@ Data *addData(Data *data)
         node = node->next;
     }
 
-    node->next = data;
+    node->next = dataNode;
     DC++;
     return node->next;
     
 }
 
+Data *createDataNode(int number)
+{
+    char **pNumber = convertNumberToBinary(number);
+    Data *dataNode = (Data *)malloc(sizeof(Data));
+
+    dataNode->next = NULL;
+    dataNode->data = *pNumber;
+
+    return dataNode;
+}
