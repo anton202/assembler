@@ -4,3 +4,6 @@ typedef struct DataNode
     char *data;
     
 }Data;
+
+
+Data *addData(int number);

@@ -160,14 +160,19 @@ This function gets the data from a given line and check if data is valid.
 if data is valid it saves it to a give pointer.
 return: 0 if error otherwise return 1.
 */
-int checkDataFormat(char *line, int *lineIndex, int *saveNumber, int lineNumber)
+/*int checkDataFormat(char *line, int *lineIndex, int *saveNumber, int lineNumber)
 {
     int c, i = *lineIndex;
     int k = 0;
     char numberString[NUMBER_LENGTH + 2];
     int number;
 
-    if(*(line + i) == '\0')
+    if(*(line +i ) == '\0')
+    {
+        return 0;
+    }
+
+    if(*(line + i + 1) == '\0')
     {
         printf("\nline number: %d Error: .data line defenition can`t end with:\'%c\'\n",lineNumber,*(line + (i - 1)));
         return 0;
@@ -230,4 +235,31 @@ int checkDataFormat(char *line, int *lineIndex, int *saveNumber, int lineNumber)
     *saveNumber = number;
 
     return 1;
+}*/
+/*returns 0 if valid number else returns the char that encounterd*/
+int getNumber(char *line,int *number, int *lineIndex)
+{
+    char numberString[75];
+    int k = 0;
+    int i = *lineIndex;
+    int c;
+
+    while(isdigit(*(line + i)))
+    {
+        numberString[k] = *(line + i);
+        i++;
+        k++;
+    }
+
+    numberString[k] = '\0';
+    c = *(line + i);
+
+    if(c != ',' && c != ' ')
+    {
+        return c;
+    }
+
+    *number = atoi(numberString);
+    *lineIndex = i;
+    return -1;
 }

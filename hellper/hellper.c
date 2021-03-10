@@ -33,21 +33,37 @@ int readLine(char *arr, FILE *fp,int lineNum)
 }
 
 
-int  checkIfSemicolon(char *line, int *lineIndex)
+int  checkIfSemicolon(char *line, int *lineIndex,int lineNumber)
 {
     int i = *lineIndex;
 
-    while(isspace(*(line + i)))
+    while (isspace(*(line + i)))
     {
         i++;
     }
 
-    if(*(line + i) == ',')
+    if(*(line + i) == '\0')
     {
-        *lineIndex = ++i; 
-        return 1;
+        return -1;
     }
 
-    *lineIndex = i; 
-    return 0;
+    if(*(line + i) == ',')
+    {
+        i++;
+         while (isspace(*(line + i)))
+         {
+             i++;
+         }
+         if(*(line + i) == '\0')
+         {
+             printf("\nline number: %d Error: data defenition line cannot end with: ',' ",lineNumber);
+             return -1;
+         }
+         *lineIndex = i;
+         return 1;
+    }
+
+    printf("\nline number: %d Error: numbers must be seperated by comma",lineNumber);
+    return -1;
+    
 }

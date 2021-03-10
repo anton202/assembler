@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <ctype.h>
 #include "firstRun.h"
 #include "../hellper/hellper.h"
 #include "../utility/utility.h"
+#include "../machineCode/machineCode.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,7 +13,8 @@ int main(int argc, char *argv[])
     char *symbol;
     int lineIndex = 0;
     int isDataDirective;
-    int c, number;
+    int c, number, i, getNumberStatus;
+    Data *savedData;
 
     if (argc == 1)
     {
@@ -41,27 +44,33 @@ int main(int argc, char *argv[])
         isDataDirective = checkIfDataDirective(line, &lineIndex);
         if (!isDataDirective)
         {
-            if (!checkIfSemicolon(line, &lineIndex))
+            if(*(line + lineIndex) != ' ')
             {
-                while ((c = checkDataFormat(line, &lineIndex, &number, 1)) != 0)
-                {
-                    /* save the number that checkDataFormat got*/
-                    
-                    if (!checkIfSemicolon(line, &lineIndex))
-                    {
-                        printf("Error: number parameters should be seperated by ','");
-                        return 0;
-                    }
-                    printf("\n%d\n", number);
-                }
-                printf("\n%d\n", number);
+                printf("line number %d Erorr: there must be at least one space between .data and the data itself",1);
+                return 0;
             }
-            else
-            { 
-                printf("Error: semicoln not allowd between .data and the first argument");
-            }
-        }
 
+            while (isspace(*(line + lineIndex))){
+                lineIndex++;
+            }
+           
+
+            do{
+                getNumberStatus = getNumber(line,&number,&lineIndex);
+                if(getNumberStatus > -1)
+                {
+                    /*hnadle error*/
+                    printf("line number:%d Erorr: %c is not a valid number",1,getNumberStatus);
+                    return 0;
+                }
+                if(number > -2047 && number < 2047)
+                {
+                   savedData = addData(number);
+                   printf("\nnumber read: %d",number);
+                }
+            } while(checkIfSemicolon(line, &lineIndex,1) != -1);
+            
+        }
         printf("\nline index: %d\n", lineIndex);
     }
 

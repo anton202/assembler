@@ -1,5 +1,6 @@
-test convert to binary number
-store data from line to data picture
+
+handle "-" and "+" signs in .data
+test the new function for reading data of .data directive
 
 
 

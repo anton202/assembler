@@ -3,8 +3,19 @@
 #include "machineCode.h"
 #include "../utility/utility.h"
 
-int DC = 0;
-Data *head = NULL;
+static int DC = 0;
+static Data *head = NULL;
+
+static Data *createDataNode(int number)
+{
+    char *pNumber = convertNumberToBinary(number);
+    Data *dataNode = (Data *)malloc(sizeof(Data));
+
+    dataNode->next = NULL;
+    dataNode->data = pNumber;
+
+    return dataNode;
+}
 
 Data *addData(int number)
 {
@@ -37,13 +48,3 @@ Data *addData(int number)
     
 }
 
-Data *createDataNode(int number)
-{
-    char **pNumber = convertNumberToBinary(number);
-    Data *dataNode = (Data *)malloc(sizeof(Data));
-
-    dataNode->next = NULL;
-    dataNode->data = *pNumber;
-
-    return dataNode;
-}
