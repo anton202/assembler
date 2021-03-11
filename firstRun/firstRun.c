@@ -237,14 +237,24 @@ return: 0 if error otherwise return 1.
     return 1;
 }*/
 /*returns 0 if valid number else returns the char that encounterd*/
-int getNumber(char *line,int *number, int *lineIndex)
+int getNumber(char *line, int *number, int *lineIndex)
 {
     char numberString[75];
     int k = 0;
     int i = *lineIndex;
-    int c;
+    int c, sign = 1;
 
-    while(isdigit(*(line + i)))
+    if (*(line + i) == '-')
+    {
+        sign = -1;
+        i++;
+    }
+    else if (*(line + i) == '+')
+    {
+        i++;
+    }
+
+    while (isdigit(*(line + i)))
     {
         numberString[k] = *(line + i);
         i++;
@@ -254,12 +264,12 @@ int getNumber(char *line,int *number, int *lineIndex)
     numberString[k] = '\0';
     c = *(line + i);
 
-    if(c != ',' && c != ' ')
+    if (c != ',' && c != ' ')
     {
         return c;
     }
 
-    *number = atoi(numberString);
+    *number = sign * atoi(numberString);
     *lineIndex = i;
     return -1;
 }
