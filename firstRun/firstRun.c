@@ -4,11 +4,14 @@
 #include <string.h>
 #include "../tables/tables.h"
 #include "../tables/symbolTable/symbolTable.h"
+#include "../hellper/hellper.h"
+#include "../machineCode/machineCode.h"
 
 #define MAX_NUMBER 2047
 #define MIN_NUMBER -2047
 #define NUMBER_LENGTH 4
 #define MAX_SYMBOL_LENGTH 31
+#define MAX_STRING_LENGTH 70
 
 /*
 check if first input in the given line is a symbol decleration.
@@ -155,87 +158,6 @@ int checkIfDataDirective(char *line, int *lineIndex)
     return -1;
 }
 
-/*
-This function gets the data from a given line and check if data is valid.
-if data is valid it saves it to a give pointer.
-return: 0 if error otherwise return 1.
-*/
-/*int checkDataFormat(char *line, int *lineIndex, int *saveNumber, int lineNumber)
-{
-    int c, i = *lineIndex;
-    int k = 0;
-    char numberString[NUMBER_LENGTH + 2];
-    int number;
-
-    if(*(line +i ) == '\0')
-    {
-        return 0;
-    }
-
-    if(*(line + i + 1) == '\0')
-    {
-        printf("\nline number: %d Error: .data line defenition can`t end with:\'%c\'\n",lineNumber,*(line + (i - 1)));
-        return 0;
-    }
-
-    while (isspace(*(line + i)))
-    {
-        i++;
-    }
-
-    if ((c = *(line + i)) != '-' && c != '+' && !isdigit(c))
-    {
-        printf("line number: %d Error: Iligal start of number", lineNumber);
-        return 0;
-    }
-
-    numberString[k] = c;
-    k++;
-    i++;
-
-    while ((c = *(line + i)) != ' ' && c != ',' && c != '\0')
-    {
-        if (!isdigit(c))
-        {
-            numberString[k++] = c;
-            numberString[k] = '\0';
-            printf("line number:%d Error: %s not a ligal number", lineNumber, numberString);
-            return 0;
-        }
-
-        if (k > (NUMBER_LENGTH + 1))
-        {
-            numberString[k++] = c;
-            numberString[k] = '\0';
-            printf("line number: %d Error: Number: %s is to long ", lineNumber, numberString);
-            return 0;
-        }
-
-        numberString[k++] = c;
-        i++;
-    }
-
-    numberString[k] = '\0';
-    number = atoi(numberString);
-
-    if (number > MAX_NUMBER || number < MIN_NUMBER)
-    {
-        printf("line number: %d Error: Number %d is to big or to small. max number allowed is: %d, min number allowed is:%d ", lineNumber, number, MAX_NUMBER, MIN_NUMBER);
-        return 0;
-    }
-
-    if (c == '\0')
-    {
-        *lineIndex = i;
-        *saveNumber = number;
-        return 0;
-    }
-
-    *lineIndex = i;
-    *saveNumber = number;
-
-    return 1;
-}*/
 /*returns 0 if valid number else returns the char that encounterd*/
 int getNumber(char *line, int *number, int *lineIndex)
 {
@@ -272,4 +194,86 @@ int getNumber(char *line, int *number, int *lineIndex)
     *number = sign * atoi(numberString);
     *lineIndex = i;
     return -1;
+}
+
+int readAndSaveDataDirective_Data(char *line, int *lineIndex)
+{
+    int getNumberStatus = 0;
+    int number;
+    /*check if there is at least on space betwen .data and a number*/
+    if (*(line + *lineIndex) != ' ')
+    {
+        printf("line number %d Erorr: there must be at least one space between .data and the data itself", 1);
+        return 0;
+    }
+
+    /*skip all the white space between .data and the first argument*/
+    while (isspace(*(line + *lineIndex)))
+    {
+        *lineIndex += 1;
+    }
+
+    do
+    {
+        getNumberStatus = getNumber(line, &number, lineIndex);
+        if (getNumberStatus > -1)
+        {
+            /*hnadle error*/
+            printf("\nline number:%d Erorr: %c is not a valid number\n", 1, getNumberStatus);
+            return 0;
+        }
+        if (number > -2047 && number < 2047)
+        {
+            addData(number);
+            printf("\nnumber read: %d", number);
+        }
+        else
+        {
+            printf("\nnumber line %d Error: number %d is to big\n", 1, number);
+            return 0;
+        }
+
+    } while (checkIfSemicolon(line, lineIndex, 1) != -1);
+
+    return 1;
+}
+
+int readAndSaveString(char *line, int *lineIndex, int lineNmber)
+{
+    int i = *lineIndex;
+    Data *test;
+    int c, k;
+
+    if ((c = *(line + i)) != '"')
+    {
+        printf("line Number: %d Erorr: strign argument must start with \" ", lineNmber);
+        return 0;
+    }
+
+    i++;
+
+    while ((c = *(line + i)) != '"')
+    {
+        if (c == '\0')
+        {
+            printf("line number: %d Erorr: string argument must end with \" ", lineNmber);
+            return 0;
+        }
+
+        test = addData(c);
+        /*T E S T DELETE THIS*/
+
+       /* for ( k = 0; k < 12; k++)
+        {
+            printf(" %d ", *(test->data+k));
+        }
+    putchar('\n');*/
+
+    /*UNTIL HERE*/
+        i++;
+    }
+
+    addData(0);
+    *lineIndex = ++i;
+    return 1;
 }

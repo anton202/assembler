@@ -13,8 +13,6 @@ int main(int argc, char *argv[])
     char *symbol;
     int lineIndex = 0;
     int isDataDirective;
-    int  number, getNumberStatus;
-    Data *savedData;
 
     if (argc == 1)
     {
@@ -44,39 +42,24 @@ int main(int argc, char *argv[])
         isDataDirective = checkIfDataDirective(line, &lineIndex);
         if (!isDataDirective)
         {
-            /*check if there is at least on space betwen .data and a number*/
-            if(*(line + lineIndex) != ' ')
+            readAndSaveDataDirective_Data(line, &lineIndex);
+        }
+        else if (isDataDirective == 1)
+        {
+           printf("\n%d\n",'\0');
+            if (line[lineIndex] != ' ')
             {
-                printf("line number %d Erorr: there must be at least one space between .data and the data itself",1);
+                printf("\nnumber line: %d Erorr: There must be at least one space between .string and the argument.\n", 1);
                 return 0;
             }
 
-            /*skip all the white space between .data and the first argument*/
-            while (isspace(*(line + lineIndex))){
+            while (isspace(*(line + lineIndex)))
+            {
                 lineIndex++;
             }
-           
-            do{
-                getNumberStatus = getNumber(line,&number,&lineIndex);
-                if(getNumberStatus > -1)
-                {
-                    /*hnadle error*/
-                    printf("\nline number:%d Erorr: %c is not a valid number\n",1,getNumberStatus);
-                    return 0;
-                }
-                if(number > -2047 && number < 2047)
-                {
-                   savedData = addData(number);
-                   printf("\nnumber read: %d",number);
-                }else{
-                    printf("\nnumber line %d Error: number %d is to big\n",1,number);
-                    return 0;
-                }
-                
-            } while(checkIfSemicolon(line, &lineIndex,1) != -1);
-            
+
+            readAndSaveString(line, &lineIndex, 1);
         }
-        
     }
 
     return 1;

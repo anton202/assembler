@@ -1,1 +1,1 @@
-   .data    -5, 4444, 56 , 565 
+   .string "f"hello this is test"
