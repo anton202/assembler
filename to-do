@@ -1,8 +1,5 @@
-test get string
-    #"""
-    #""
-    #"hello "ff" "
-
+test .extern directive add to symbol table
+add function thaat checks if after extern symbol therre is no chars on line
 
 
 

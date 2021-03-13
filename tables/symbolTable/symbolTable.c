@@ -31,7 +31,7 @@ Symbol *insertSymbol(Symbol *entry)
 }
 
 /*Lineara search over linked list*/
-Symbol *searchSymbol(char *symbolName )
+Symbol *searchSymbol(char *symbolName)
 {
     Symbol *symTable = symbolTabel;
     while (symTable != NULL)
@@ -41,16 +41,14 @@ Symbol *searchSymbol(char *symbolName )
             return symTable;
         }
         symTable = symTable->next;
-        
     }
     return NULL;
 }
 
-
 /*if atr2 is missing enter '\0'*/
 Symbol *createSymbol(char *symName, int value, char *atr1, char *atr2)
 {
-    
+
     Symbol *newSymbol = (Symbol *)malloc(sizeof(Symbol));
     if (newSymbol != NULL)
     {
@@ -64,6 +62,25 @@ Symbol *createSymbol(char *symName, int value, char *atr1, char *atr2)
     return NULL;
 }
 
-void printHead(){
-    printf("symbol name at head:%s\n",symbolTabel->symbol);
+void printHead()
+{
+    printf("symbol name at head:%s\n", symbolTabel->symbol);
+}
+
+int checkIfExternalAtribute(Symbol *externSymbol)
+{
+    Symbol *sym = searchSymbol(externSymbol->symbol);
+    int i = 0;
+
+    if (sym != NULL)
+    {
+        for (; i < 3; i++)
+        {
+            if (!strcmp(sym->attributes[i], "external"))
+            {
+                return 1;
+            }
+        }
+    }
+    return 0;
 }

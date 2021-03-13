@@ -141,18 +141,31 @@ int checkIfDataDirective(char *line, int *lineIndex)
         i++;
         k++;
     }
+
     data[k] = '\0';
 
-    if (!strcmp(".data", data))
+    if (strcmp(".data", data) == 0)
     {
         *lineIndex = i;
         return 0;
     }
 
-    if (!strcmp(".string", data))
+    if (strcmp(".string", data) == 0)
     {
         *lineIndex = i;
         return 1;
+    }
+
+    if (strcmp(".extern", data) == 0)
+    {
+        *lineIndex = i;
+        return 2;
+    }
+
+    if (strcmp(".entry", data) == 0)
+    {
+        *lineIndex = i;
+        return 3;
     }
 
     return -1;
@@ -238,7 +251,7 @@ int readAndSaveDataDirective_Data(char *line, int *lineIndex)
     return 1;
 }
 
-int readAndSaveString(char *line, int *lineIndex, int lineNmber)
+int readAndSaveString(char *line, int *lineIndex, int *lineNmber)
 {
     int i = *lineIndex;
     Data *test;
@@ -246,7 +259,7 @@ int readAndSaveString(char *line, int *lineIndex, int lineNmber)
 
     if ((c = *(line + i)) != '"')
     {
-        printf("line Number: %d Erorr: strign argument must start with \" ", lineNmber);
+        printf("line Number: %d Erorr: strign argument must start with \" ", *lineNmber);
         return 0;
     }
 
@@ -256,24 +269,79 @@ int readAndSaveString(char *line, int *lineIndex, int lineNmber)
     {
         if (c == '\0')
         {
-            printf("line number: %d Erorr: string argument must end with \" ", lineNmber);
+            printf("line number: %d Erorr: string argument must end with: \" ", *lineNmber);
             return 0;
         }
 
         test = addData(c);
-        /*T E S T DELETE THIS*/
+        /*T E S T  - DELETE THIS*/
 
-       /* for ( k = 0; k < 12; k++)
+        for (k = 0; k < 12; k++)
         {
-            printf(" %d ", *(test->data+k));
+            printf(" %d ", *(test->data + k));
         }
-    putchar('\n');*/
+        putchar('\n');
 
-    /*UNTIL HERE*/
+        /*UNTIL HERE*/
         i++;
     }
 
     addData(0);
     *lineIndex = ++i;
     return 1;
+}
+
+int readAndSaveStringDirective_data(char *line, int *lineIndex, int *lineNumber)
+{
+    if (line[*lineIndex] != ' ')
+    {
+        printf("\nnumber line: %d Erorr: There must be at least one space between .string and the argument.\n", 1);
+        return 0;
+    }
+
+    while (isspace(*(line + *lineIndex)))
+    {
+        (*lineIndex)++;
+    }
+
+    if (readAndSaveString(line, lineIndex, lineNumber))
+    {
+        if (isNotSpace(line, lineIndex))
+        {
+            printf("number line: %d Error: only one argument allowed for .string", *lineNumber);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+char *getExternDirectiveSymbol(char *line, int *lineIndex)
+{
+    int i = *lineIndex;
+    int c, k = 0;
+    char *symbolArr = NULL;
+
+    symbolArr = (char*) malloc(73);
+
+    if(symbolArr == NULL)
+    {
+        printf("Error: error ocured while allocating memory");
+        exit(0);
+    }
+
+    while (isspace(*(line + i)))
+    {
+        i++;
+    }
+
+    while ((c = *(line + i)) != ' ' && c != '\0')
+    {
+        symbolArr[k] = c;
+        k++;
+        i++;
+    }
+
+    *lineIndex = i;
+    
+    return symbolArr;
 }

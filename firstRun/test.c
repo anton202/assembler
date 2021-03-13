@@ -4,6 +4,7 @@
 #include "../hellper/hellper.h"
 #include "../utility/utility.h"
 #include "../machineCode/machineCode.h"
+#include "../tables/symbolTable/symbolTable.h"
 
 int main(int argc, char *argv[])
 {
@@ -12,7 +13,9 @@ int main(int argc, char *argv[])
     int lineReadStatus;
     char *symbol;
     int lineIndex = 0;
-    int isDataDirective;
+    int isDataDirective, lineNumber = 1;
+    char *externalSymbol;
+    Symbol *externSymbol;
 
     if (argc == 1)
     {
@@ -46,19 +49,27 @@ int main(int argc, char *argv[])
         }
         else if (isDataDirective == 1)
         {
-           printf("\n%d\n",'\0');
-            if (line[lineIndex] != ' ')
-            {
-                printf("\nnumber line: %d Erorr: There must be at least one space between .string and the argument.\n", 1);
-                return 0;
-            }
 
-            while (isspace(*(line + lineIndex)))
+            readAndSaveStringDirective_data(line, &lineIndex, &lineNumber);
+        }
+        else if (isDataDirective == 2)
+        {
+           
+            externalSymbol = getExternDirectiveSymbol(line, &lineIndex);
+            if (isSymbolValid(externalSymbol, lineNumber))
             {
-                lineIndex++;
+               externSymbol = createSymbol(externalSymbol,0,"external","\0");
+               if(insertSymbol(externSymbol) == NULL)
+               {
+                   if(!checkIfExternalAtribute(externSymbol))
+                   {
+                       printf("line number: %d Error: symbole arlready been defined it this file ",lineNumber);
+                       return 0;
+                   }
+               }
+               /*check if there are aditional chares on the line after extern symbol*/
+              printHead();
             }
-
-            readAndSaveString(line, &lineIndex, 1);
         }
     }
 

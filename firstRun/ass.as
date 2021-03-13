@@ -1,1 +1,1 @@
-   .string "f"hello this is test"
+	.extern hi
