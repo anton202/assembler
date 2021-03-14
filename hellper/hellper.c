@@ -87,3 +87,18 @@ int isNotSpace(char *line, int *lineIndex)
     *lineIndex = i;
     return 1;
 }
+
+int checkForNotAlphaNumericChars(char *symbol)
+{
+    int i;
+
+    for ( i = 0; *(symbol + i) != '\0'; i++)
+    {
+        if(!isalnum(*(symbol + i)))
+        {
+            return 0;
+        }
+    }
+    return 1;
+    
+}

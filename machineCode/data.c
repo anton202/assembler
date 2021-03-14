@@ -22,13 +22,13 @@ Data *addData(int number)
     Data *node = head;
     Data *dataNode = createDataNode(number);
 
-    /*
-        if((DC + getCodeCounter()) > 4095)
+    
+        if((DC + getInstructionCount()) < MEMORY_SIZE)
         {
             printf("Error: not enough memory space");
             exit(0);
         }
-    */
+    
 
     if(head == NULL)
     {
@@ -48,3 +48,7 @@ Data *addData(int number)
     
 }
 
+int getDataCount(void)
+{
+    return DC;
+}

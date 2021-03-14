@@ -6,6 +6,8 @@ int readAndSaveDataDirective_Data(char *line, int *lineIndex);
 int readAndSaveString(char *line, int *lineIndex, int lineNmber);
 int readAndSaveStringDirective_data(char *line, int *lineIndex, int *lineNumber);
 char *getExternDirectiveSymbol(char *line, int *lineIndex);
+int readAndSaveExternalSymbol(char *line, int *lineIndex, int lineNumber);
+int saveInstructionLineSymbol(char *symbol, int lineNumber);
 
 
 

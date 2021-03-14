@@ -64,7 +64,7 @@ Symbol *createSymbol(char *symName, int value, char *atr1, char *atr2)
 
 void printHead()
 {
-    printf("symbol name at head:%s\n", symbolTabel->symbol);
+    printf("symbol name at head:%s, value: %d \n", symbolTabel->symbol,symbolTabel->value);
 }
 
 int checkIfExternalAtribute(Symbol *externSymbol)

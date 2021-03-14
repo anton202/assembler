@@ -92,6 +92,14 @@ int isSymbolValid(char *symbol, int lineNumber)
         free(symbol);
         return 0;
     }
+
+    if (!checkForNotAlphaNumericChars(symbol))
+    {
+        printf("line number: %d Error: symbol name must only contain aqalphabet or number charecters\n", lineNumber);
+        free(symbol);
+        return 0;
+    }
+
     if (searchOpperation(symbol) != NULL)
     {
         printf("\nline number: %d Error: symbol name can`t be assembly operation name.", lineNumber);
@@ -321,9 +329,9 @@ char *getExternDirectiveSymbol(char *line, int *lineIndex)
     int c, k = 0;
     char *symbolArr = NULL;
 
-    symbolArr = (char*) malloc(73);
+    symbolArr = (char *)malloc(73);
 
-    if(symbolArr == NULL)
+    if (symbolArr == NULL)
     {
         printf("Error: error ocured while allocating memory");
         exit(0);
@@ -342,6 +350,48 @@ char *getExternDirectiveSymbol(char *line, int *lineIndex)
     }
 
     *lineIndex = i;
-    
+
     return symbolArr;
+}
+
+int readAndSaveExternalSymbol(char *line, int *lineIndex, int lineNumber)
+{
+    Symbol *externSymbol = NULL;
+    char *externalSymbol = getExternDirectiveSymbol(line, lineIndex);
+
+    if (isSymbolValid(externalSymbol, lineNumber))
+    {
+        externSymbol = createSymbol(externalSymbol, getDataCount(), "external", "\0");
+        if (insertSymbol(externSymbol) == NULL)
+        {
+            if (!checkIfExternalAtribute(externSymbol))
+            {
+                printf("line number: %d Error: symbole arlready been defined it this file ", lineNumber);
+                return 0;
+            }
+        }
+        if (isNotSpace(line, lineIndex))
+        {
+            printf("line number: %d Error: .extern directive accept only one parameter\n.", lineNumber);
+            return 0;
+        }
+        printHead();
+    }
+    return 1;
+}
+
+int saveInstructionLineSymbol(char *symbol, int lineNumber)
+{
+    Symbol *instSymbol = NULL;
+
+    if (!isSymbolValid(symbol, lineNumber))
+    {
+        return 0;
+    }
+
+    instSymbol = createSymbol(symbol, getInstructionCount(), "code", "\0");
+    insertSymbol(instSymbol);
+
+    return 1;
+
 }

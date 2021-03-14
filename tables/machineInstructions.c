@@ -2,6 +2,7 @@
 #include "tables.h"
 #define tableSize 16
 
+
 static MaInstruction machineInstructionsTable[tableSize] = {
 
 	{"mov", {0, 0, 0, 0, 0, 0, 0, 0}},

@@ -1,1 +1,1 @@
-	.extern hi
+	.extern HELLO:

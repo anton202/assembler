@@ -3,8 +3,7 @@
 #include "firstRun.h"
 #include "../hellper/hellper.h"
 #include "../utility/utility.h"
-#include "../machineCode/machineCode.h"
-#include "../tables/symbolTable/symbolTable.h"
+#include "../tables/tables.h"
 
 int main(int argc, char *argv[])
 {
@@ -12,10 +11,9 @@ int main(int argc, char *argv[])
     FILE *fp;
     int lineReadStatus;
     char *symbol;
+    int symbolDecleration = 0;
     int lineIndex = 0;
     int isDataDirective, lineNumber = 1;
-    char *externalSymbol;
-    Symbol *externSymbol;
 
     if (argc == 1)
     {
@@ -39,6 +37,7 @@ int main(int argc, char *argv[])
         {
             printf("the symbol is: %s \n", symbol);
             isSymbolValid(symbol, 1);
+            symbolDecleration = 1;
         }
         printf("\nline index: %d\n", lineIndex);
 
@@ -49,28 +48,28 @@ int main(int argc, char *argv[])
         }
         else if (isDataDirective == 1)
         {
-
             readAndSaveStringDirective_data(line, &lineIndex, &lineNumber);
         }
         else if (isDataDirective == 2)
         {
-           
-            externalSymbol = getExternDirectiveSymbol(line, &lineIndex);
-            if (isSymbolValid(externalSymbol, lineNumber))
+            readAndSaveExternalSymbol(line, &lineIndex, lineNumber);
+        }
+        else if (isDataDirective == 3)
+        {
+            /* return to the begining of the run. this will be delt with in the second run*/
+        }
+
+        /* so if no .data, .string, .extern, .entry then it is an instruction line*/
+
+        if (symbolDecleration)
+        {
+            if(!saveInstructionLineSymbol(symbol, lineNumber))
             {
-               externSymbol = createSymbol(externalSymbol,0,"external","\0");
-               if(insertSymbol(externSymbol) == NULL)
-               {
-                   if(!checkIfExternalAtribute(externSymbol))
-                   {
-                       printf("line number: %d Error: symbole arlready been defined it this file ",lineNumber);
-                       return 0;
-                   }
-               }
-               /*check if there are aditional chares on the line after extern symbol*/
-              printHead();
+                return 0;
             }
         }
+
+        /*get operation name and check if valid*/
     }
 
     return 1;
