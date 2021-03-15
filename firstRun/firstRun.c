@@ -393,5 +393,29 @@ int saveInstructionLineSymbol(char *symbol, int lineNumber)
     insertSymbol(instSymbol);
 
     return 1;
+}
 
+char *getOperationName(char *line, int *lineIndex)
+{
+    int i = *lineIndex;
+    int k = 0;
+    int c;
+    char *opName = (char*)malloc(80);
+    
+    while (isspace(*(line + i)))
+    {
+        i++;
+    }
+    
+    while((c = *(line +i)) != ' ' && c != '\0')
+    {
+        opName[k] = c;
+        k++;
+        i++;
+    }
+
+    opName[k] = '\0';
+    *lineIndex = i;
+
+    return opName;
 }

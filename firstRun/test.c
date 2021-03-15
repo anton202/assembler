@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     char line[80];
     FILE *fp;
     int lineReadStatus;
-    char *symbol;
+    char *symbol, *operationName;
     int symbolDecleration = 0;
     int lineIndex = 0;
     int isDataDirective, lineNumber = 1;
@@ -70,6 +70,13 @@ int main(int argc, char *argv[])
         }
 
         /*get operation name and check if valid*/
+        operationName = getOperationName(line, &lineIndex);
+        if(searchOpperation(operationName) == NULL)
+        {
+            printf("\n number line: %d Error: operation %s is iligal operation.\n",1,operationName);
+            return 0;
+        }
+        printf("operation name is: %s\n",operationName);
     }
 
     return 1;

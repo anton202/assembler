@@ -1,8 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "machineCode.h"
 #define MEMORY_START_LOCATION 100
 
-static IC = MEMORY_START_LOCATION;
+static int IC = MEMORY_START_LOCATION;
 static int i = 0;
 static Instruction *instructionTable[MEMORY_SIZE];
 

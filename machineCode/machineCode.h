@@ -19,11 +19,11 @@ typedef struct InstructionData
 }Instruction;
 
 
-
 Data *addData(int number);
 int getDataCount(void);
 Instruction *createInstruction(char *instruction,int memoryLocation, int length, char ARE);
 int getInstructionCount(void);
 int addInstructionToInstructionTable(Instruction *inst);
+
 
 

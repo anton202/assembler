@@ -1,1 +1,1 @@
-	.extern HELLO:
+    TEST:   add 4,4
