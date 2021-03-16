@@ -6,12 +6,22 @@
 #include "../tables/symbolTable/symbolTable.h"
 #include "../hellper/hellper.h"
 #include "../machineCode/machineCode.h"
+#include "../utility/utility.h"
 
 #define MAX_NUMBER 2047
 #define MIN_NUMBER -2047
 #define NUMBER_LENGTH 4
 #define MAX_SYMBOL_LENGTH 31
 #define MAX_STRING_LENGTH 70
+
+typedef struct OperandsData
+{
+    char sourceOpAddresingMode;
+    char destenationOpAddressongMode;
+    char length;
+    char *sourceOpBinaryCode;
+    char *destenationOpBinaryCode;
+} Operands;
 
 /*
 check if first input in the given line is a symbol decleration.
@@ -400,14 +410,14 @@ char *getOperationName(char *line, int *lineIndex)
     int i = *lineIndex;
     int k = 0;
     int c;
-    char *opName = (char*)malloc(80);
-    
+    char *opName = (char *)malloc(80);
+
     while (isspace(*(line + i)))
     {
         i++;
     }
-    
-    while((c = *(line +i)) != ' ' && c != '\0')
+
+    while ((c = *(line + i)) != ' ' && c != '\0')
     {
         opName[k] = c;
         k++;
@@ -418,4 +428,104 @@ char *getOperationName(char *line, int *lineIndex)
     *lineIndex = i;
 
     return opName;
+}
+
+Operands *readAndCodeOperands(char *operationName, char *line, int *lineIndex, int lineNumber)
+{
+    Operands *operands = (Operands *)malloc(sizeof(Operands));
+    char *opName;
+    char opAddressingMode;
+    int i = *lineIndex;
+    if (
+        !strcmp(operationName, "mov") ||
+        !strcmp(operationName, "cmp") ||
+        !strcmp(operationName, "add") ||
+        !strcmp(operationName, "sub") ||
+        !strcmp(operationName, "lea"))
+    {
+        /*handle firts operand*/
+        opName = readOperand(line, lineIndex, lineNumber);
+        operands->sourceOpAddresingMode = getOperandsAddressingMode(opName);
+        if (isSourceOpAddressingModeValid(operands->sourceOpAddresingMode))
+        {
+            if (operands->sourceOpAddresingMode == 0)
+            {
+                operands->sourceOpBinaryCode = convertNumberArgToBinary(opName);
+            }
+            if (operands->sourceOpAddresingMode == 1)
+            {
+                operands->sourceOpBinaryCode = NULL;
+            }
+            if (operands->sourceOpAddresingMode == 3)
+            {
+                operands->sourceOpBinaryCode = registerCode(opName);
+            }
+        }else{
+            printf("line number: %d Error: %s is not ligal operand for %s",lineNumber,opName,operationName);
+            return NULL;
+        }
+        /* handle second operand*/
+
+        /*slip white space and check if there is semocolon between two arguments*/
+        while (isspace(*(line + *lineIndex)))
+        {
+            *lineIndex++;
+        }
+        if(*(line + *lineIndex) != ',')
+        {
+            printf("line number: %d Error: There must be a semicolon betwen two arguments",lineNumber);
+            return NULL;
+        }
+         while (isspace(*(line + *lineIndex)))
+        {
+            *lineIndex++;
+        }
+
+    opName = readOperand(line, lineIndex, lineNumber);        
+    operands->destenationOpAddressongMode = getOperandsAddressingMode(opName);
+    if (isDestenationOpAddressingModeValid(operands->destenationOpAddressongMode))
+    {
+        if (operands->destenationOpAddressongMode == 0)
+            {
+                operands->destenationOpBinaryCode = convertNumberArgToBinary(opName);
+            }
+            if (operands->destenationOpAddressongMode == 1)
+            {
+                operands->destenationOpBinaryCode = NULL;
+            }
+            if (operands->destenationOpAddressongMode == 3)
+            {
+                operands->destenationOpBinaryCode = registerCode(opName);
+            }
+    }else{
+            printf("line number: %d Error: %s is not ligal operand for %s",lineNumber,opName,operationName);
+            return NULL;
+        }
+
+        if(isNotSpace(line, lineIndex))
+        {
+            printf("line number: %d Error: line must be empty after arguments decleration\n",lineNumber);
+            return NULL;
+        }
+
+        operands->length = 2;
+        return operands;
+    }
+    else if (
+        !strcmp(operationName, "clr") ||
+        !strcmp(operationName, "not") ||
+        !strcmp(operationName, "inc") ||
+        !strcmp(operationName, "dec") ||
+        !strcmp(operationName, "jmp") ||
+        !strcmp(operationName, "bne") ||
+        !strcmp(operationName, "jsr") ||
+        !strcmp(operationName, "red") ||
+        !strcmp(operationName, "prn"))
+    {
+    }
+    else if (!strcmp(operationName, "rts") || !strcmp(operationName, "stop"))
+    {
+    }
+
+    return NULL;
 }

@@ -1,6 +1,6 @@
 
-add get instruction from current line anad check if it exist in instruction table
-
+analyz operation argument:
+get argument, check if valid, check if valid amount of argument etc...
 
 
 

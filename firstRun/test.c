@@ -79,5 +79,8 @@ int main(int argc, char *argv[])
         printf("operation name is: %s\n",operationName);
     }
 
+    /*check if at least on space and nothing else is between operation anem and the opperand*/
+    /*also notic that there are two operation names that do not have operands*/
+
     return 1;
 }
