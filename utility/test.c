@@ -1,14 +1,12 @@
-#include<stdio.h>
+#include <stdio.h>
 #include "utility.h"
 
-void main(void){
-  char *p;
-  int i;
-   p = convertNumberToBinary(-1264);
-   for ( i = 0; i < 12; i++)
-   {
-        printf("%d",p[i]);
-   }
-   putchar('\n');
-   
+int main(void)
+{
+
+     int number;
+
+     number = isImmedtiateOperand("#+55.55", 1);
+     printf("\nthe number is %d\n",number);
+     return 1;
 }

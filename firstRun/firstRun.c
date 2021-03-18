@@ -432,10 +432,7 @@ char *getOperationName(char *line, int *lineIndex)
 
 Operands *readAndCodeOperands(char *operationName, char *line, int *lineIndex, int lineNumber)
 {
-    Operands *operands = (Operands *)malloc(sizeof(Operands));
-    char *opName;
-    char opAddressingMode;
-    int i = *lineIndex;
+
     if (
         !strcmp(operationName, "mov") ||
         !strcmp(operationName, "cmp") ||
@@ -443,73 +440,7 @@ Operands *readAndCodeOperands(char *operationName, char *line, int *lineIndex, i
         !strcmp(operationName, "sub") ||
         !strcmp(operationName, "lea"))
     {
-        /*handle firts operand*/
-        opName = readOperand(line, lineIndex, lineNumber);
-        operands->sourceOpAddresingMode = getOperandsAddressingMode(opName);
-        if (isSourceOpAddressingModeValid(operands->sourceOpAddresingMode))
-        {
-            if (operands->sourceOpAddresingMode == 0)
-            {
-                operands->sourceOpBinaryCode = convertNumberArgToBinary(opName);
-            }
-            if (operands->sourceOpAddresingMode == 1)
-            {
-                operands->sourceOpBinaryCode = NULL;
-            }
-            if (operands->sourceOpAddresingMode == 3)
-            {
-                operands->sourceOpBinaryCode = registerCode(opName);
-            }
-        }else{
-            printf("line number: %d Error: %s is not ligal operand for %s",lineNumber,opName,operationName);
-            return NULL;
-        }
-        /* handle second operand*/
-
-        /*slip white space and check if there is semocolon between two arguments*/
-        while (isspace(*(line + *lineIndex)))
-        {
-            *lineIndex++;
-        }
-        if(*(line + *lineIndex) != ',')
-        {
-            printf("line number: %d Error: There must be a semicolon betwen two arguments",lineNumber);
-            return NULL;
-        }
-         while (isspace(*(line + *lineIndex)))
-        {
-            *lineIndex++;
-        }
-
-    opName = readOperand(line, lineIndex, lineNumber);        
-    operands->destenationOpAddressongMode = getOperandsAddressingMode(opName);
-    if (isDestenationOpAddressingModeValid(operands->destenationOpAddressongMode))
-    {
-        if (operands->destenationOpAddressongMode == 0)
-            {
-                operands->destenationOpBinaryCode = convertNumberArgToBinary(opName);
-            }
-            if (operands->destenationOpAddressongMode == 1)
-            {
-                operands->destenationOpBinaryCode = NULL;
-            }
-            if (operands->destenationOpAddressongMode == 3)
-            {
-                operands->destenationOpBinaryCode = registerCode(opName);
-            }
-    }else{
-            printf("line number: %d Error: %s is not ligal operand for %s",lineNumber,opName,operationName);
-            return NULL;
-        }
-
-        if(isNotSpace(line, lineIndex))
-        {
-            printf("line number: %d Error: line must be empty after arguments decleration\n",lineNumber);
-            return NULL;
-        }
-
-        operands->length = 2;
-        return operands;
+        return handleTwoOperandsOperations(operationName, line, lineIndex, lineNumber);
     }
     else if (
         !strcmp(operationName, "clr") ||
@@ -522,10 +453,167 @@ Operands *readAndCodeOperands(char *operationName, char *line, int *lineIndex, i
         !strcmp(operationName, "red") ||
         !strcmp(operationName, "prn"))
     {
+        return handleOneOperandOperations(operationName, line, lineIndex, lineNumber);
     }
     else if (!strcmp(operationName, "rts") || !strcmp(operationName, "stop"))
     {
+        return handleNoOperandsOperations(line, lineIndex, lineNumber);
     }
 
     return NULL;
+}
+
+Operands *handleTwoOperandsOperations(char *operationName, char *line, int *lineIndex, int lineNumber)
+{
+    Operands *operands = (Operands *)malloc(sizeof(Operands));
+
+    /* handle second operand*/
+    if (readFirstOperand(operationName, operands, line, lineIndex, lineNumber) == NULL)
+    {
+        free(operands);
+        return NULL;
+    }
+
+    /*slip white space and check if there is semocolon between two arguments*/
+    while (isspace(*(line + *lineIndex)))
+    {
+        *lineIndex++;
+    }
+    if (*(line + *lineIndex) != ',')
+    {
+        printf("line number: %d Error: There must be a semicolon betwen two arguments", lineNumber);
+        free(operands);
+        return NULL;
+    }
+    while (isspace(*(line + *lineIndex)))
+    {
+        *lineIndex++;
+    }
+
+    /*read second operand*/
+
+    if (readSecondOperanad(operationName, operands, line, lineIndex, lineNumber) == NULL)
+    {
+        free(operands);
+        return NULL;
+    }
+
+    if (isNotSpace(line, lineIndex))
+    {
+        printf("line number: %d Error: line must be empty after arguments decleration\n", lineNumber);
+        free(operands);
+        return NULL;
+    }
+
+    operands->length = 2;
+    return operands;
+}
+
+Operands *handleOneOperandOperations(char *operationName, char *line, int *lineIndex, int lineNumber)
+{
+    Operands *operands = (Operands *)malloc(sizeof(Operands));
+
+    /* handle second operand*/
+    if (readSecondOperand(operationName, operands, line, lineIndex, lineNumber) == NULL)
+    {
+        free(operands);
+        return NULL;
+    }
+
+    if (isNotSpace(line, lineIndex))
+    {
+        printf("line number: %d Error: line must be empty after arguments decleration\n", lineNumber);
+        free(operands);
+        return NULL;
+    }
+
+    operands->length = 1;
+    return operands;
+}
+
+Operands *handleNoOperandsOperations(char *line, int *lineIndex, int lineNumber)
+{
+    Operands *operands = (Operands *)malloc(sizeof(Operands));
+    if (isNotSpace(line, lineIndex))
+    {
+        printf("line number: %d Error: line must be empty after arguments decleration\n", lineNumber);
+        free(operands);
+        return NULL;
+    }
+
+    operands->length = 0;
+    return operands;
+}
+
+Operands *readFirstOperand(char *operationName, Operands *operands, char *line, int *lineIndex, int lineNumber)
+{
+    char *opName;
+
+    opName = readOperand(line, lineIndex, lineNumber);
+    if (getOperandsAddressingMode(opName, lineNumber) >= 0)
+    {
+        operands->sourceOpAddresingMode;
+    }
+    else
+    {
+        free(operands);
+        return NULL;
+    }
+    if (isSourceOpAddressingModeValid(operands->sourceOpAddresingMode))
+    {
+        if (operands->sourceOpAddresingMode == 0)
+        {
+            operands->sourceOpBinaryCode = convertNumberArgToBinary(opName);
+        }
+        if (operands->sourceOpAddresingMode == 1)
+        {
+            operands->sourceOpBinaryCode = NULL;
+        }
+        if (operands->sourceOpAddresingMode == 3)
+        {
+            operands->sourceOpBinaryCode = registerCode(opName);
+        }
+    }
+    else
+    {
+        printf("line number: %d Error: %s is not ligal operand for %s", lineNumber, opName, operationName);
+        free(operands);
+        return NULL;
+    }
+
+    return operands;
+}
+
+Operands *readSecondOperand(char *operationName, Operands *operands, char *line, int *lineIndex, int lineNumber)
+{
+    char *opName;
+    opName = readOperand(line, lineIndex, lineNumber);
+    operands->destenationOpAddressongMode = getOperandsAddressingMode(opName);
+    if (isDestenationOpAddressingModeValid(operands->destenationOpAddressongMode))
+    {
+        if (operands->destenationOpAddressongMode == 0)
+        {
+            operands->destenationOpBinaryCode = convertNumberArgToBinary(opName);
+        }
+        if (operands->destenationOpAddressongMode == 1)
+        {
+            operands->destenationOpBinaryCode = NULL;
+        }
+        if (operands->destenationOpAddressongMode == 2)
+        {
+            /* operands->destenationOpBinaryCode = NULL;*/
+        }
+        if (operands->destenationOpAddressongMode == 3)
+        {
+            operands->destenationOpBinaryCode = registerCode(opName);
+        }
+    }
+    else
+    {
+        printf("line number: %d Error: %s is not ligal operand for %s", lineNumber, opName, operationName);
+        free(operands);
+        return NULL;
+    }
+
+    return operands;
 }

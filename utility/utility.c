@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 char *addExtentitonToFileName(char *fileName)
 {
@@ -62,7 +63,8 @@ char *convertToBinary(int number)
     int i = 11;
     char *numArray = (char *)malloc(12);
 
-    if(numArray == NULL){
+    if (numArray == NULL)
+    {
         printf("Error: allocating memory space");
         exit(0);
     }
@@ -83,7 +85,7 @@ char *twosComplement(char *number)
 
     for (; i < numberLength; i++)
     {
-        if(number[i] == 0)
+        if (number[i] == 0)
         {
             number[i] = 1;
         }
@@ -93,28 +95,109 @@ char *twosComplement(char *number)
         }
     }
 
-    for(i = 11; i >= 0; i--)
+    for (i = 11; i >= 0; i--)
     {
-        if(number[i] == 0)
+        if (number[i] == 0)
         {
             number[i] = 1;
             return number;
         }
-        else{
+        else
+        {
             number[i] = 0;
         }
     }
     return number;
-
 }
 
-char *convertNumberToBinary(int number){
+char *convertNumberToBinary(int number)
+{
     char *pNumber = NULL;
 
-    if(number > 0)
+    if (number > 0)
     {
         return convertToBinary(number);
     }
     pNumber = convertToBinary(-(number));
     return twosComplement(pNumber);
 }
+
+
+int isImmedtiateOperand(char *operand, int lineNumber)
+{
+    int i = 1;
+    int sign = 1;
+    int k = 0;
+    char numberString[80];
+
+    if (*operand != '#')
+    {
+        return -1;
+    }
+
+    if (*(operand + i) == '-')
+    {
+        sign = -1;
+        i++;
+    }
+    else if (*(operand + i) == '+')
+    {
+        i++;
+    }
+
+    while (isdigit(*(operand + i)))
+    {
+        numberString[k] = *(operand + i);
+        i++;
+        k++;
+    }
+
+    numberString[k] = '\0';
+
+    if(*(operand + i) != '\0')
+    {
+        printf("number line %d: Error: Iligal number %s",lineNumber, operand);
+        return -1;
+    }
+
+    if(atoi(numberString) > 2047 || atoi(numberString) < -2047)
+    {
+         printf("number line %d: Error: number %d is to big or to small",lineNumber, atoi(numberString));
+        return -1;
+    }
+
+    return sign * atoi(numberString);
+
+}
+
+int getOperandsAddressingMode(char *operand,int lineNumber)
+{
+    if (isImmedtiateOperand(operand,lineNumber) >= 0)
+    {
+        return 0; /*addressing mode 0*/
+    }
+    return 0;
+}
+
+
+char *readOperand(char *line, int *lineIndex, int lineNumber)
+{
+    int i = *lineIndex;
+    int c, k = 0;
+    char *operand = (char *)malloc(80);
+
+    while (isspace(*(line + i)))
+    {
+        i++;
+    }
+
+    while ((c = *(line + i)) != ' ' && c != ',' && c != '\0')
+    {
+        operand[k++] = c;
+    }
+
+    operand[k] = '\0';
+    *lineIndex = i;
+    return operand;
+}
+
