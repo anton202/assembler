@@ -1,18 +1,12 @@
 #include <stdio.h>
-#include "machineInstructions.h"
+#include "tables.h"
 
-void main(void){
+int main(void){
+
 int i;
-char *insCode = NULL;
 
-insCode = searchOpperation("aded");
-
-if(insCode != NULL){
-for(i = 0; i < 8; i++){
-printf("%d",*(insCode + i));
-}
-}
-
-return;
+i = isValidAddressingMode("lea",2,1);
+printf("is addressing mode valid: %d",i);
+return 1;
 }
 

@@ -76,7 +76,7 @@ char *isSymbol(char *line, int *lineIndex)
     return symbol;
 }
 
-int isSymbolValid(char *symbol, int lineNumber)
+/*int isSymbolValid(char *symbol, int lineNumber)
 {
     if (strlen(symbol) > MAX_SYMBOL_LENGTH)
     {
@@ -130,7 +130,7 @@ int isSymbolValid(char *symbol, int lineNumber)
         return 0;
     }
     return 1;
-}
+}*/
 
 /*
 This function checks if there is .data / .string directive in the curent line.
@@ -367,9 +367,9 @@ char *getExternDirectiveSymbol(char *line, int *lineIndex)
 int readAndSaveExternalSymbol(char *line, int *lineIndex, int lineNumber)
 {
     Symbol *externSymbol = NULL;
-    char *externalSymbol = getExternDirectiveSymbol(line, lineIndex);
+    char *externalSymbol = getSymbol(line, lineIndex);
 
-    if (isSymbolValid(externalSymbol, lineNumber))
+    if (isSymbolValid(externalSymbol, lineNumber) && !isSymbolDefined(externalSymbol,lineNumber) && !isRegisterName(externalSymbol,lineNumber))
     {
         externSymbol = createSymbol(externalSymbol, getDataCount(), "external", "\0");
         if (insertSymbol(externSymbol) == NULL)
@@ -466,6 +466,11 @@ Operands *readAndCodeOperands(char *operationName, char *line, int *lineIndex, i
 Operands *handleTwoOperandsOperations(char *operationName, char *line, int *lineIndex, int lineNumber)
 {
     Operands *operands = (Operands *)malloc(sizeof(Operands));
+    if (operands == NULL)
+    {
+        printf("Error allocating memory");
+        exit(0);
+    }
 
     /* handle second operand*/
     if (readFirstOperand(operationName, operands, line, lineIndex, lineNumber) == NULL)
@@ -512,6 +517,11 @@ Operands *handleTwoOperandsOperations(char *operationName, char *line, int *line
 Operands *handleOneOperandOperations(char *operationName, char *line, int *lineIndex, int lineNumber)
 {
     Operands *operands = (Operands *)malloc(sizeof(Operands));
+    if (operands == NULL)
+    {
+        printf("Error allocating memory");
+        exit(0);
+    }
 
     /* handle second operand*/
     if (readSecondOperand(operationName, operands, line, lineIndex, lineNumber) == NULL)
@@ -534,6 +544,11 @@ Operands *handleOneOperandOperations(char *operationName, char *line, int *lineI
 Operands *handleNoOperandsOperations(char *line, int *lineIndex, int lineNumber)
 {
     Operands *operands = (Operands *)malloc(sizeof(Operands));
+    if (operands == NULL)
+    {
+        printf("Error allocating memory");
+        exit(0);
+    }
     if (isNotSpace(line, lineIndex))
     {
         printf("line number: %d Error: line must be empty after arguments decleration\n", lineNumber);
@@ -559,11 +574,11 @@ Operands *readFirstOperand(char *operationName, Operands *operands, char *line, 
         free(operands);
         return NULL;
     }
-    if (isSourceOpAddressingModeValid(operands->sourceOpAddresingMode))
+    if (isValidAddressingMode(operationName,1,operands->sourceOpAddresingMode))
     {
         if (operands->sourceOpAddresingMode == 0)
         {
-            operands->sourceOpBinaryCode = convertNumberArgToBinary(opName);
+            operands->sourceOpBinaryCode = convertNumberOpToBinary(opName,lineNumber);
         }
         if (operands->sourceOpAddresingMode == 1)
         {
@@ -589,7 +604,7 @@ Operands *readSecondOperand(char *operationName, Operands *operands, char *line,
     char *opName;
     opName = readOperand(line, lineIndex, lineNumber);
     operands->destenationOpAddressongMode = getOperandsAddressingMode(opName);
-    if (isDestenationOpAddressingModeValid(operands->destenationOpAddressongMode))
+    if (isValidAddressingMode(operationName,2,operands->destenationOpAddressongMode))
     {
         if (operands->destenationOpAddressongMode == 0)
         {

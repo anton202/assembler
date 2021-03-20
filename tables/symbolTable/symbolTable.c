@@ -42,6 +42,7 @@ Symbol *searchSymbol(char *symbolName)
         }
         symTable = symTable->next;
     }
+    
     return NULL;
 }
 

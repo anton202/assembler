@@ -1,15 +1,16 @@
-typedef struct MachineInstructions{
+typedef struct MachineInstructions
+{
 	char *instructionName;
 	char opcFunct[8];
-}MaInstruction;
+} MaInstruction;
 
-typedef struct ValidAddressingMode{
+typedef struct ValidAddressingMode
+{
 	char *operationName;
 	char sourceOpeAddressingModes[3];
-	char destinationOpAddressingMModes[3];
-}AddressingModes;
-
+	char destinationOpAddressingModes[3];
+} AddressingModes;
 
 char *searchOpperation(char *opName);
-
 int searchRegisterName(char *rName);
+int isValidAddressingMode(char *operationName, int srcOrDestenationOp, int addressingMode);

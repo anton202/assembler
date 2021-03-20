@@ -36,8 +36,8 @@ int main(int argc, char *argv[])
         if (symbol != NULL)
         {
             printf("the symbol is: %s \n", symbol);
-            isSymbolValid(symbol, 1);
-            symbolDecleration = 1;
+            if (isSymbolValid(symbol, 1) && !isRegisterName(symbol, 1) && !isSymbolDefined(symbol, 1))
+                symbolDecleration = 1;
         }
         printf("\nline index: %d\n", lineIndex);
 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
         if (symbolDecleration)
         {
-            if(!saveInstructionLineSymbol(symbol, lineNumber))
+            if (!saveInstructionLineSymbol(symbol, lineNumber))
             {
                 return 0;
             }
@@ -71,16 +71,16 @@ int main(int argc, char *argv[])
 
         /*get operation name and check if valid*/
         operationName = getOperationName(line, &lineIndex);
-        if(searchOpperation(operationName) == NULL)
+        if (searchOpperation(operationName) == NULL)
         {
-            printf("\n number line: %d Error: operation %s is iligal operation.\n",1,operationName);
+            printf("\n number line: %d Error: operation %s is iligal operation.\n", 1, operationName);
             return 0;
         }
-        printf("operation name is: %s\n",operationName);
+        printf("operation name is: %s\n", operationName);
     }
 
     /*check if at least on space and nothing else is between operation anem and the opperand*/
-    /*also notic that there are two operation names that do not have operands*/
+    /*also notice that there are two operation names that do not have operands*/
 
     return 1;
 }

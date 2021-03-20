@@ -2,6 +2,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "utility.h"
+#include "../tables/symbolTable/symbolTable.h"
+#include "../tables/tables.h"
+#include "../hellper/hellper.h"
 
 char *addExtentitonToFileName(char *fileName)
 {
@@ -122,6 +126,13 @@ char *convertNumberToBinary(int number)
     return twosComplement(pNumber);
 }
 
+char *convertNumberOpToBinary(char *operand, int lineNumber)
+{
+    int number;
+
+    number = isImmedtiateOperand(operand, lineNumber);
+    return convertToBinary(number);
+}
 
 int isImmedtiateOperand(char *operand, int lineNumber)
 {
@@ -154,31 +165,124 @@ int isImmedtiateOperand(char *operand, int lineNumber)
 
     numberString[k] = '\0';
 
-    if(*(operand + i) != '\0')
+    if (*(operand + i) != '\0')
     {
-        printf("number line %d: Error: Iligal number %s",lineNumber, operand);
+        printf("number line %d: Error: Iligal number %s", lineNumber, operand);
         return -1;
     }
 
-    if(atoi(numberString) > 2047 || atoi(numberString) < -2047)
+    if (atoi(numberString) > 2047 || atoi(numberString) < -2047)
     {
-         printf("number line %d: Error: number %d is to big or to small",lineNumber, atoi(numberString));
+        printf("number line %d: Error: number %d is to big or to small", lineNumber, atoi(numberString));
         return -1;
     }
 
     return sign * atoi(numberString);
-
 }
 
-int getOperandsAddressingMode(char *operand,int lineNumber)
+int isSymbolValid(char *symbol, int lineNumber)
 {
-    if (isImmedtiateOperand(operand,lineNumber) >= 0)
+    if (strlen(symbol) > MAX_SYMBOL_LENGTH)
     {
-        return 0; /*addressing mode 0*/
+        printf("\n line number: %d :Error: symbol name must be less than 31 characters.", lineNumber);
+        free(symbol);
+        return 0;
+    }
+    if (!isalpha(*symbol))
+    {
+        printf("\nline number: %d Error: symbol name must start with an alphabetic letter.", lineNumber);
+        free(symbol);
+        return 0;
+    }
+    if (!strcmp(symbol, "data") || !strcmp(symbol, "string") || !strcmp(symbol, "entry") || !strcmp(symbol, "extern"))
+    {
+        printf("line number: %d Error: %s is a saved word in assembly", lineNumber, symbol);
+        free(symbol);
+        return 0;
+    }
+    if (isdigit(*symbol))
+    {
+        printf("\nline number: %d Error: symbol name can`t begin with a digit.", lineNumber);
+        free(symbol);
+        return 0;
+    }
+
+    if (!checkForNotAlphaNumericChars(symbol))
+    {
+        printf("line number: %d Error: symbol name must only contain aqalphabet or number charecters\n", lineNumber);
+        free(symbol);
+        return 0;
+    }
+
+    if (searchOpperation(symbol) != NULL)
+    {
+        printf("\nline number: %d Error: symbol name can`t be assembly operation name.", lineNumber);
+        free(symbol);
+        return 0;
+    }
+
+    return 1;
+}
+
+int isSymbolDefined(char *symbol, int lineNumber)
+{
+    if (searchSymbol(symbol) != NULL)
+    {
+        printf("line number: %d Error: symbol name already defined.", lineNumber);
+        free(symbol);
+        return 1;
     }
     return 0;
 }
 
+int isRegisterName(char *symbol, int lineNumber)
+{
+    if (searchRegisterName(symbol))
+    {
+        printf("line number: %d Error: symbol name can`t be saved register name", lineNumber);
+        free(symbol);
+        return 1;
+    }
+    return 0;
+}
+
+int isRelativeOPerand(char *opernad, int lineNuber)
+{
+    if (*opernad == '%')
+    {
+        if (isSymbolValid(opernad + 1, lineNuber))
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int getOperandsAddressingMode(char *operand, int lineNumber)
+{
+    if (isImmedtiateOperand(operand, lineNumber) >= 0)
+    {
+        return 0; /*addressing mode 0*/
+    }
+    /*relative operanad*/
+    if (isRelativeOPerand(operand, lineNumber))
+    {
+        return 2;
+    }
+
+    /*register direct operand*/
+    if (searchRegisterName(operand))
+    {
+        return 3;
+    }
+    /*direct operand*/
+    if (isSymbolValid(operand, lineNumber))
+    {
+        return 1;
+    }
+    printf("line number: %d Error: iligal operand", lineNumber);
+    return -1;
+}
 
 char *readOperand(char *line, int *lineIndex, int lineNumber)
 {
@@ -200,4 +304,3 @@ char *readOperand(char *line, int *lineIndex, int lineNumber)
     *lineIndex = i;
     return operand;
 }
-
