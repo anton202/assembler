@@ -126,15 +126,15 @@ char *convertNumberToBinary(int number)
     return twosComplement(pNumber);
 }
 
-char *convertNumberOpToBinary(char *operand, int lineNumber)
+/*char *convertNumberOpToBinary(char *operand, int lineNumber)
 {
     int number;
 
     number = isImmedtiateOperand(operand, lineNumber);
     return convertToBinary(number);
-}
+}*/
 
-int isImmedtiateOperand(char *operand, int lineNumber)
+int isImmedtiateOperand(char *operand, int lineNumber, int *number)
 {
     int i = 1;
     int sign = 1;
@@ -143,7 +143,7 @@ int isImmedtiateOperand(char *operand, int lineNumber)
 
     if (*operand != '#')
     {
-        return -1;
+        return 0;
     }
 
     if (*(operand + i) == '-')
@@ -168,16 +168,17 @@ int isImmedtiateOperand(char *operand, int lineNumber)
     if (*(operand + i) != '\0')
     {
         printf("number line %d: Error: Iligal number %s", lineNumber, operand);
-        return -1;
+        return 0;
     }
 
     if (atoi(numberString) > 2047 || atoi(numberString) < -2047)
     {
         printf("number line %d: Error: number %d is to big or to small", lineNumber, atoi(numberString));
-        return -1;
+        return 0;
     }
 
-    return sign * atoi(numberString);
+    *number = sign * atoi(numberString);
+    return 1;
 }
 
 int isSymbolValid(char *symbol, int lineNumber)
@@ -258,9 +259,9 @@ int isRelativeOPerand(char *opernad, int lineNuber)
     return 0;
 }
 
-int getOperandsAddressingMode(char *operand, int lineNumber)
+int getOperandsAddressingMode(char *operand, int lineNumber, int *number)
 {
-    if (isImmedtiateOperand(operand, lineNumber) >= 0)
+    if (isImmedtiateOperand(operand, lineNumber, number))
     {
         return 0; /*addressing mode 0*/
     }
@@ -290,6 +291,12 @@ char *readOperand(char *line, int *lineIndex, int lineNumber)
     int c, k = 0;
     char *operand = (char *)malloc(80);
 
+    if(operand == NULL)
+    {
+        printf("\nline number: %d Error occured while allocating memory\n",lineNumber);
+        exit(0);
+    }
+
     while (isspace(*(line + i)))
     {
         i++;
@@ -298,6 +305,7 @@ char *readOperand(char *line, int *lineIndex, int lineNumber)
     while ((c = *(line + i)) != ' ' && c != ',' && c != '\0')
     {
         operand[k++] = c;
+        i++;
     }
 
     operand[k] = '\0';

@@ -1,5 +1,6 @@
 
-create registers table- thier binary representation of their adress.
+have an issue with number opperand in readFirstOperand function.
+    the function that reaads the number opperand returns a number in to the if statment wich is an issue
 
 
 

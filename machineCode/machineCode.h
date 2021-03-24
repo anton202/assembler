@@ -24,6 +24,8 @@ int getDataCount(void);
 Instruction *createInstruction(char *instruction,int memoryLocation, int length, char ARE);
 int getInstructionCount(void);
 int addInstructionToInstructionTable(Instruction *inst);
+void incInstructionCount(void);
+void printInstructionTable(void);
 
 
 

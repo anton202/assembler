@@ -11,6 +11,8 @@ typedef struct ValidAddressingMode
 	char destinationOpAddressingModes[3];
 } AddressingModes;
 
+
 char *searchOpperation(char *opName);
 int searchRegisterName(char *rName);
 int isValidAddressingMode(char *operationName, int srcOrDestenationOp, int addressingMode);
+char *getRegisterAdress(char *rName);

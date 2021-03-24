@@ -8,14 +8,17 @@
 #include "../machineCode/machineCode.h"
 #include "../tables/symbolTable/symbolTable.h"
 
-int firstRun(char *line, int lineNumber);
-
 int main(int argc, char *argv[])
 {
+    int i = 0;
     char line[80];
     FILE *fp;
-    int lineNumber = 1;
-    int error = 0;
+    int lineReadStatus;
+    char *symbol, *operationName;
+    int symbolDecleration = 0;
+    int lineIndex = 0;
+    int isDataDirective, lineNumber = 1;
+    Operands *operands;
 
     if (argc == 1)
     {
@@ -29,66 +32,33 @@ int main(int argc, char *argv[])
     }
 
     fp = fopen(addExtentitonToFileName(argv[1]), "r");
-
-    while (readLine(line, fp, lineNumber) != EOF)
-    {
-        if (!firstRun(line, lineNumber))
-        {
-            error = 1;
-        }
-        lineNumber++;
-    }
-
-    /*printInstructionTable();*/
-    return 1;
-}
-
-int firstRun(char *line, int lineNumber)
-{
-    int lineIndex = 0;
-    int isDataDirective;
-    Operands *operands;
-    int symbolDecleration = 0;
-    char *symbol, *operationName;
+    lineReadStatus = readLine(line, fp, 1);
 
     symbol = isSymbol(line, &lineIndex);
     if (symbol != NULL)
     {
-        symbolDecleration = 1;
+        printf("the symbol is: %s \n", symbol);
+        if (isSymbolValid(symbol, 1) && !isRegisterName(symbol, 1) && !isSymbolDefined(symbol, 1))
+            symbolDecleration = 1;
     }
+    printf("\nline index: %d\n", lineIndex);
 
     isDataDirective = checkIfDataDirective(line, &lineIndex);
-
-    if (!isDataDirective || isDataDirective == 1)
-    {
-        if (symbolDecleration)
-        {
-            if (!isSymbolValid(symbol, 1) && isRegisterName(symbol, 1) && isSymbolDefined(symbol, 1))
-            {
-                return 0;
-            }
-            else
-            {
-                insertSymbol(createSymbol(symbol, getDataCount(), "data", '\0'));
-            }
-        }
-    }
-
     if (!isDataDirective)
     {
-        return readAndSaveDataDirective_Data(line, &lineIndex,lineNumber);
+        readAndSaveDataDirective_Data(line, &lineIndex);
     }
     else if (isDataDirective == 1)
     {
-        return readAndSaveStringDirective_data(line, &lineIndex, lineNumber);
+        readAndSaveStringDirective_data(line, &lineIndex, &lineNumber);
     }
     else if (isDataDirective == 2)
     {
-        return readAndSaveExternalSymbol(line, &lineIndex, lineNumber);
+        readAndSaveExternalSymbol(line, &lineIndex, lineNumber);
     }
     else if (isDataDirective == 3)
     {
-        return 1;
+        /* return to the begining of the run. this will be delt with in the second run*/
     }
 
     /* so if no .data, .string, .extern, .entry then it is an instruction line*/
@@ -105,9 +75,13 @@ int firstRun(char *line, int lineNumber)
     operationName = getOperationName(line, &lineIndex);
     if (searchOpperation(operationName) == NULL)
     {
-        printf("\nline number: %d Error: operation %s is iligal operation.\n", lineNumber, operationName);
+        printf("\n number line: %d Error: operation %s is iligal operation.\n", 1, operationName);
         return 0;
     }
+    printf("operation name is: %s\n", operationName);
+
+    /*check if at least on space and nothing else is between operation anem and the opperand*/
+    /*also notice that there are two operation names that do not have operands*/
 
     if (strcmp("rts", operationName) != 0 && strcmp("stop", operationName) && *(line + lineIndex) != ' ')
     {
@@ -130,6 +104,23 @@ int firstRun(char *line, int lineNumber)
     saveFirstWord(createFirstWord(operationName, operands), operands);
     saveAdditionalWord(operands->sourceOpAddresingMode, operands->sourceOpBinaryCode);
     saveAdditionalWord(operands->destenationOpAddressongMode, operands->destenationOpBinaryCode);
+
+    printInstructionTable();
+
+    /* printf("\nSaved data:\n");
+    printf("source operand addressong mode: %d\n", operands->sourceOpAddresingMode);
+    printf("source operand Binary Code mode: %s", operands->sourceOpBinaryCode);
+    for (; i < 12; i++)
+    {
+        printf("%d ",operands->sourceOpBinaryCode[i]);
+    }
+    
+    printf("\ndestenation operand Addressong Mode: %d\n", operands->destenationOpAddressongMode);
+    printf("destenation operand binary code: %s", operands->destenationOpBinaryCode);
+    for (i = 0; i < 12; i++)
+    {
+        printf("%d ",operands->destenationOpBinaryCode[i]);
+    }*/
 
     return 1;
 }

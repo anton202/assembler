@@ -1,19 +1,46 @@
 #include <string.h>
 
-char *registersNames[] = {
-    "r1", "r2", "r3", "r4", "r5", "r6", "r7", "-1"};
+#define REGISTER_TABLE_SIZE 8
+typedef struct RegisterData
+{
+    char *name;
+    char adress[12];
+} Register;
+
+Register registersTable[REGISTER_TABLE_SIZE] = {
+    {"r0", {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+    {"r1", {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
+    {"r2", {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}},
+    {"r3", {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1}},
+    {"r4", {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0}},
+    {"r5", {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1}},
+    {"r6", {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0}},
+    {"r7", {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1}}};
+
 
 /*returns 1 if register name exist in table. else returns 0*/
 int searchRegisterName(char *rName)
 {
     int i = 0;
-    while (strcmp(registersNames[i], "-1") != 0)
+    for (; i < REGISTER_TABLE_SIZE; i++)
     {
-        if (strcmp(registersNames[i], rName) == 0)
+        if (strcmp(registersTable[i].name, rName) == 0)
         {
             return 1;
         }
-        i++;
+    }
+    return 0;
+}
+
+char *getRegisterAdress(char *rName)
+{
+    int i = 0;
+    for (; i < REGISTER_TABLE_SIZE; i++)
+    {
+        if (strcmp(registersTable[i].name, rName) == 0)
+        {
+            return registersTable[i].adress ;
+        }
     }
     return 0;
 }

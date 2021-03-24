@@ -7,21 +7,13 @@
 #include "../hellper/hellper.h"
 #include "../machineCode/machineCode.h"
 #include "../utility/utility.h"
+#include "firstRun.h"
 
 #define MAX_NUMBER 2047
 #define MIN_NUMBER -2047
 #define NUMBER_LENGTH 4
 #define MAX_SYMBOL_LENGTH 31
 #define MAX_STRING_LENGTH 70
-
-typedef struct OperandsData
-{
-    char sourceOpAddresingMode;
-    char destenationOpAddressongMode;
-    char length;
-    char *sourceOpBinaryCode;
-    char *destenationOpBinaryCode;
-} Operands;
 
 /*
 check if first input in the given line is a symbol decleration.
@@ -75,62 +67,6 @@ char *isSymbol(char *line, int *lineIndex)
     }
     return symbol;
 }
-
-/*int isSymbolValid(char *symbol, int lineNumber)
-{
-    if (strlen(symbol) > MAX_SYMBOL_LENGTH)
-    {
-        printf("\n line number: %d :Error: symbol name must be less than 31 characters.", lineNumber);
-        free(symbol);
-        return 0;
-    }
-    if (!isalpha(*symbol))
-    {
-        printf("\nline number: %d Error: symbol name must start with an alphabetic letter.", lineNumber);
-        free(symbol);
-        return 0;
-    }
-    if (!strcmp(symbol, "data") || !strcmp(symbol, "string") || !strcmp(symbol, "entry") || !strcmp(symbol, "extern"))
-    {
-        printf("line number: %d Error: %s is a saved word in assembly", lineNumber, symbol);
-        free(symbol);
-        return 0;
-    }
-    if (isdigit(*symbol))
-    {
-        printf("\nline number: %d Error: symbol name can`t begin with a digit.", lineNumber);
-        free(symbol);
-        return 0;
-    }
-
-    if (!checkForNotAlphaNumericChars(symbol))
-    {
-        printf("line number: %d Error: symbol name must only contain aqalphabet or number charecters\n", lineNumber);
-        free(symbol);
-        return 0;
-    }
-
-    if (searchOpperation(symbol) != NULL)
-    {
-        printf("\nline number: %d Error: symbol name can`t be assembly operation name.", lineNumber);
-        free(symbol);
-        return 0;
-    }
-    if (searchSymbol(symbol) != NULL)
-    {
-        printf("line number: %d Error: symbol name already defined.", lineNumber);
-        free(symbol);
-        return 0;
-    }
-
-    if (searchRegisterName(symbol))
-    {
-        printf("line number: %d Error: symbol name can`t be saved register name", lineNumber);
-        free(symbol);
-        return 0;
-    }
-    return 1;
-}*/
 
 /*
 This function checks if there is .data / .string directive in the curent line.
@@ -224,17 +160,17 @@ int getNumber(char *line, int *number, int *lineIndex)
 
     *number = sign * atoi(numberString);
     *lineIndex = i;
-    return -1;
+    return 0;
 }
 
-int readAndSaveDataDirective_Data(char *line, int *lineIndex)
+int readAndSaveDataDirective_Data(char *line, int *lineIndex, int lineNumber)
 {
     int getNumberStatus = 0;
     int number;
     /*check if there is at least on space betwen .data and a number*/
     if (*(line + *lineIndex) != ' ')
     {
-        printf("line number %d Erorr: there must be at least one space between .data and the data itself", 1);
+        printf("line number %d Erorr: there must be at least one space between .data and the data itself", lineNumber);
         return 0;
     }
 
@@ -247,37 +183,36 @@ int readAndSaveDataDirective_Data(char *line, int *lineIndex)
     do
     {
         getNumberStatus = getNumber(line, &number, lineIndex);
-        if (getNumberStatus > -1)
+        if (getNumberStatus)
         {
             /*hnadle error*/
-            printf("\nline number:%d Erorr: %c is not a valid number\n", 1, getNumberStatus);
+            printf("\nline number:%d Erorr: %c is not a valid number\n", lineNumber, getNumberStatus);
+
             return 0;
         }
         if (number > -2047 && number < 2047)
         {
             addData(number);
-            printf("\nnumber read: %d", number);
         }
         else
         {
-            printf("\nnumber line %d Error: number %d is to big\n", 1, number);
+            printf("\nline number %d Error: number %d is to big\n", lineNumber, number);
             return 0;
         }
 
-    } while (checkIfSemicolon(line, lineIndex, 1) != -1);
+    } while (checkIfSemicolon(line, lineIndex, lineNumber) != -1);
 
     return 1;
 }
 
-int readAndSaveString(char *line, int *lineIndex, int *lineNmber)
+int readAndSaveString(char *line, int *lineIndex, int lineNmber)
 {
     int i = *lineIndex;
-    Data *test;
-    int c, k;
+    int c;
 
     if ((c = *(line + i)) != '"')
     {
-        printf("line Number: %d Erorr: strign argument must start with \" ", *lineNmber);
+        printf("line Number: %d Erorr: strign argument must start with \n", lineNmber);
         return 0;
     }
 
@@ -287,20 +222,11 @@ int readAndSaveString(char *line, int *lineIndex, int *lineNmber)
     {
         if (c == '\0')
         {
-            printf("line number: %d Erorr: string argument must end with: \" ", *lineNmber);
+            printf("line number: %d Erorr: string argument must end with: \n", lineNmber);
             return 0;
         }
 
-        test = addData(c);
-        /*T E S T  - DELETE THIS*/
-
-        for (k = 0; k < 12; k++)
-        {
-            printf(" %d ", *(test->data + k));
-        }
-        putchar('\n');
-
-        /*UNTIL HERE*/
+        addData(c);
         i++;
     }
 
@@ -309,11 +235,11 @@ int readAndSaveString(char *line, int *lineIndex, int *lineNmber)
     return 1;
 }
 
-int readAndSaveStringDirective_data(char *line, int *lineIndex, int *lineNumber)
+int readAndSaveStringDirective_data(char *line, int *lineIndex, int lineNumber)
 {
     if (line[*lineIndex] != ' ')
     {
-        printf("\nnumber line: %d Erorr: There must be at least one space between .string and the argument.\n", 1);
+        printf("\nnumber line: %d Erorr: There must be at least one space between .string and the argument.\n", lineNumber);
         return 0;
     }
 
@@ -326,7 +252,7 @@ int readAndSaveStringDirective_data(char *line, int *lineIndex, int *lineNumber)
     {
         if (isNotSpace(line, lineIndex))
         {
-            printf("number line: %d Error: only one argument allowed for .string", *lineNumber);
+            printf("number line: %d Error: only one argument allowed for .string", lineNumber);
             return 0;
         }
     }
@@ -367,9 +293,9 @@ char *getExternDirectiveSymbol(char *line, int *lineIndex)
 int readAndSaveExternalSymbol(char *line, int *lineIndex, int lineNumber)
 {
     Symbol *externSymbol = NULL;
-    char *externalSymbol = getSymbol(line, lineIndex);
+    char *externalSymbol = getExternDirectiveSymbol(line, lineIndex);
 
-    if (isSymbolValid(externalSymbol, lineNumber) && !isSymbolDefined(externalSymbol,lineNumber) && !isRegisterName(externalSymbol,lineNumber))
+    if (isSymbolValid(externalSymbol, lineNumber) && !isSymbolDefined(externalSymbol, lineNumber) && !isRegisterName(externalSymbol, lineNumber))
     {
         externSymbol = createSymbol(externalSymbol, getDataCount(), "external", "\0");
         if (insertSymbol(externSymbol) == NULL)
@@ -385,7 +311,6 @@ int readAndSaveExternalSymbol(char *line, int *lineIndex, int lineNumber)
             printf("line number: %d Error: .extern directive accept only one parameter\n.", lineNumber);
             return 0;
         }
-        printHead();
     }
     return 1;
 }
@@ -466,44 +391,50 @@ Operands *readAndCodeOperands(char *operationName, char *line, int *lineIndex, i
 Operands *handleTwoOperandsOperations(char *operationName, char *line, int *lineIndex, int lineNumber)
 {
     Operands *operands = (Operands *)malloc(sizeof(Operands));
+    int i = *lineIndex;
+
     if (operands == NULL)
     {
         printf("Error allocating memory");
         exit(0);
     }
 
-    /* handle second operand*/
-    if (readFirstOperand(operationName, operands, line, lineIndex, lineNumber) == NULL)
+    /* handle first operand*/
+    if (readFirstOperand(operationName, operands, line, &i, lineNumber) == NULL)
     {
         free(operands);
         return NULL;
     }
 
     /*slip white space and check if there is semocolon between two arguments*/
-    while (isspace(*(line + *lineIndex)))
+    while (isspace(*(line + i)))
     {
-        *lineIndex++;
+        i++;
     }
-    if (*(line + *lineIndex) != ',')
+
+    if (*(line + i) != ',')
     {
         printf("line number: %d Error: There must be a semicolon betwen two arguments", lineNumber);
         free(operands);
         return NULL;
     }
-    while (isspace(*(line + *lineIndex)))
+
+    i++;
+
+    while (isspace(*(line + i)))
     {
-        *lineIndex++;
+        i++;
     }
 
     /*read second operand*/
 
-    if (readSecondOperanad(operationName, operands, line, lineIndex, lineNumber) == NULL)
+    if (readSecondOperand(operationName, operands, line, &i, lineNumber) == NULL)
     {
         free(operands);
         return NULL;
     }
 
-    if (isNotSpace(line, lineIndex))
+    if (isNotSpace(line, &i))
     {
         printf("line number: %d Error: line must be empty after arguments decleration\n", lineNumber);
         free(operands);
@@ -511,6 +442,7 @@ Operands *handleTwoOperandsOperations(char *operationName, char *line, int *line
     }
 
     operands->length = 2;
+    *lineIndex = i;
     return operands;
 }
 
@@ -532,7 +464,7 @@ Operands *handleOneOperandOperations(char *operationName, char *line, int *lineI
 
     if (isNotSpace(line, lineIndex))
     {
-        printf("line number: %d Error: line must be empty after arguments decleration\n", lineNumber);
+        printf("line number: %d Error: operation %s recives only one argument \n", lineNumber, operationName);
         free(operands);
         return NULL;
     }
@@ -563,22 +495,22 @@ Operands *handleNoOperandsOperations(char *line, int *lineIndex, int lineNumber)
 Operands *readFirstOperand(char *operationName, Operands *operands, char *line, int *lineIndex, int lineNumber)
 {
     char *opName;
+    int addressingmode, number;
 
     opName = readOperand(line, lineIndex, lineNumber);
-    if (getOperandsAddressingMode(opName, lineNumber) >= 0)
+    if ((addressingmode = getOperandsAddressingMode(opName, lineNumber, &number)) >= 0)
     {
-        operands->sourceOpAddresingMode;
+        operands->sourceOpAddresingMode = addressingmode;
     }
     else
     {
-        free(operands);
         return NULL;
     }
-    if (isValidAddressingMode(operationName,1,operands->sourceOpAddresingMode))
+    if (isValidAddressingMode(operationName, 1, operands->sourceOpAddresingMode))
     {
         if (operands->sourceOpAddresingMode == 0)
         {
-            operands->sourceOpBinaryCode = convertNumberOpToBinary(opName,lineNumber);
+            operands->sourceOpBinaryCode = convertNumberToBinary(number);
         }
         if (operands->sourceOpAddresingMode == 1)
         {
@@ -586,13 +518,12 @@ Operands *readFirstOperand(char *operationName, Operands *operands, char *line, 
         }
         if (operands->sourceOpAddresingMode == 3)
         {
-            operands->sourceOpBinaryCode = registerCode(opName);
+            operands->sourceOpBinaryCode = getRegisterAdress(opName);
         }
     }
     else
     {
-        printf("line number: %d Error: %s is not ligal operand for %s", lineNumber, opName, operationName);
-        free(operands);
+        printf("line number: %d Error: %s is not a ligal operand for %s", lineNumber, opName, operationName);
         return NULL;
     }
 
@@ -602,13 +533,15 @@ Operands *readFirstOperand(char *operationName, Operands *operands, char *line, 
 Operands *readSecondOperand(char *operationName, Operands *operands, char *line, int *lineIndex, int lineNumber)
 {
     char *opName;
+    int number;
     opName = readOperand(line, lineIndex, lineNumber);
-    operands->destenationOpAddressongMode = getOperandsAddressingMode(opName);
-    if (isValidAddressingMode(operationName,2,operands->destenationOpAddressongMode))
+
+    operands->destenationOpAddressongMode = getOperandsAddressingMode(opName, lineNumber, &number);
+    if (isValidAddressingMode(operationName, 2, operands->destenationOpAddressongMode))
     {
         if (operands->destenationOpAddressongMode == 0)
         {
-            operands->destenationOpBinaryCode = convertNumberArgToBinary(opName);
+            operands->destenationOpBinaryCode = convertNumberToBinary(number);
         }
         if (operands->destenationOpAddressongMode == 1)
         {
@@ -616,19 +549,128 @@ Operands *readSecondOperand(char *operationName, Operands *operands, char *line,
         }
         if (operands->destenationOpAddressongMode == 2)
         {
-            /* operands->destenationOpBinaryCode = NULL;*/
+            operands->destenationOpBinaryCode = NULL;
         }
         if (operands->destenationOpAddressongMode == 3)
         {
-            operands->destenationOpBinaryCode = registerCode(opName);
+            operands->destenationOpBinaryCode = getRegisterAdress(opName);
         }
     }
     else
     {
-        printf("line number: %d Error: %s is not ligal operand for %s", lineNumber, opName, operationName);
-        free(operands);
+        printf("line number: %d Error: %s is not a ligal operand for %s", lineNumber, opName, operationName);
         return NULL;
     }
 
     return operands;
+}
+
+char *createFirstWord(char *operationName, Operands *operands)
+{
+    int i = 0;
+    char *opFunct = searchOpperation(operationName);
+    char *word = (char *)malloc(12);
+
+    if (word == NULL)
+    {
+        printf("\nError occured while allocating memory\n");
+        exit(0);
+    }
+
+    for (; i < 8; i++)
+    {
+        word[i] = opFunct[i];
+    }
+
+    switch (operands->sourceOpAddresingMode)
+    {
+    case 0:
+        word[8] = 0;
+        word[9] = 0;
+        break;
+
+    case 1:
+        word[8] = 0;
+        word[9] = 1;
+        break;
+
+    case 2:
+        word[8] = 1;
+        word[9] = 0;
+        break;
+
+    case 3:
+        word[8] = 1;
+        word[9] = 1;
+        break;
+
+    default:
+        break;
+    }
+
+    switch (operands->destenationOpAddressongMode)
+    {
+    case 0:
+        word[10] = 0;
+        word[11] = 0;
+        break;
+
+    case 1:
+        word[10] = 0;
+        word[11] = 1;
+        break;
+
+    case 2:
+        word[10] = 1;
+        word[11] = 0;
+        break;
+
+    case 3:
+        word[10] = 1;
+        word[11] = 1;
+        break;
+
+    default:
+        break;
+    }
+
+    return word;
+}
+
+void saveFirstWord(char *word, Operands *operands)
+{
+
+    Instruction *firstWord = createInstruction(word, getInstructionCount(), operands->length, 'A');
+    addInstructionToInstructionTable(firstWord);
+}
+
+void saveAdditionalWord(int addressingMode, char *binaryCode)
+{
+    switch (addressingMode)
+    {
+    case 0:
+        if (binaryCode != NULL)
+        {
+            addInstructionToInstructionTable(createInstruction(binaryCode, getInstructionCount(), 1, 'A'));
+        }
+        break;
+
+    case 1:
+        incInstructionCount();
+        break;
+
+    case 2:
+        incInstructionCount();
+        break;
+
+    case 3:
+        if (binaryCode != NULL)
+        {
+            addInstructionToInstructionTable(createInstruction(binaryCode, getInstructionCount(), 1, 'A'));
+        }
+        break;
+
+    default:
+        break;
+    }
 }

@@ -13,8 +13,24 @@ int getInstructionCount(void)
     return IC;
 }
 
+void incInstructionCount(void)
+{
+    IC++;
+}
+
+void printInstructionTable(void)
+{
+    int c = 0;
+    for ( ;c < i; c++)
+    {
+        printf("\nMemory loation: %d\n",instructionTable[c]->memoryLocation);
+    }
+    
+}
+
 Instruction *createInstruction(char *instruction,int memoryLocation, int length, char ARE)
 {
+   
     Instruction *inst = NULL;
     inst = (Instruction*)malloc(sizeof(Instruction));
 
@@ -33,14 +49,14 @@ Instruction *createInstruction(char *instruction,int memoryLocation, int length,
 
 int addInstructionToInstructionTable(Instruction *inst)
 {
-    if(i < MEMORY_SIZE && (i + getDataCount()) < MEMORY_SIZE)
+    if((i + getDataCount()) < MEMORY_SIZE)
     {
         instructionTable[i] = inst;
         i++;
         IC++;
         return 1;
     }
-
-    printf("Error: not enough memory space");
+    printf("Error: not enough memory space, used memory: %d", i+getDataCount());
     return 0;
 }
+

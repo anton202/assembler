@@ -42,7 +42,7 @@ Symbol *searchSymbol(char *symbolName)
         }
         symTable = symTable->next;
     }
-    
+
     return NULL;
 }
 
@@ -51,21 +51,22 @@ Symbol *createSymbol(char *symName, int value, char *atr1, char *atr2)
 {
 
     Symbol *newSymbol = (Symbol *)malloc(sizeof(Symbol));
-    if (newSymbol != NULL)
+    if (newSymbol == NULL)
     {
-        newSymbol->next = NULL;
-        newSymbol->symbol = symName;
-        newSymbol->value = value;
-        newSymbol->attributes[0] = atr1;
-        newSymbol->attributes[1] = atr2;
-        return newSymbol;
+        printf("Error occured whlile allocating memory");
+        exit(0);
     }
-    return NULL;
+    newSymbol->next = NULL;
+    newSymbol->symbol = symName;
+    newSymbol->value = value;
+    newSymbol->attributes[0] = atr1;
+    newSymbol->attributes[1] = atr2;
+    return newSymbol;
 }
 
 void printHead()
 {
-    printf("symbol name at head:%s, value: %d \n", symbolTabel->symbol,symbolTabel->value);
+    printf("symbol name at head:%s, value: %d \n", symbolTabel->symbol, symbolTabel->value);
 }
 
 int checkIfExternalAtribute(Symbol *externSymbol)
