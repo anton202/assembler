@@ -49,11 +49,13 @@ int checkIfSemicolon(char *line, int *lineIndex, int lineNumber)
 
     if (*(line + i) == ',')
     {
+
         i++;
         while (isspace(*(line + i)))
         {
             i++;
         }
+
         if (*(line + i) == '\0')
         {
             printf("\nline number: %d Error: data defenition line cannot end with: ',' ", lineNumber);
@@ -92,13 +94,12 @@ int checkForNotAlphaNumericChars(char *symbol)
 {
     int i;
 
-    for ( i = 0; *(symbol + i) != '\0'; i++)
+    for (i = 0; *(symbol + i) != '\0'; i++)
     {
-        if(!isalnum(*(symbol + i)))
+        if (!isalnum(*(symbol + i)))
         {
             return 0;
         }
     }
     return 1;
-    
 }

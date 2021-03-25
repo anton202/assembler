@@ -13,6 +13,7 @@ static Data *createDataNode(int number)
 
     dataNode->next = NULL;
     dataNode->data = pNumber;
+    dataNode->memoryLocatin = DC;
 
     return dataNode;
 }
@@ -51,4 +52,32 @@ Data *addData(int number)
 int getDataCount(void)
 {
     return DC;
+}
+
+void changeMemoryLocation(int newMemoryLocation)
+{
+    Data *node = head;
+    while (node != NULL)
+    {
+        node->memoryLocatin = node->memoryLocatin + newMemoryLocation;
+        node = node->next;
+    }
+    
+}
+
+void printDataTable(void)
+{
+    Data *node = head;
+    int i;
+    while (node != NULL)
+    {
+       /* for (i = 0; i < 12; i++)
+        {
+           printf("%d ", node->data[i]);
+        }*/
+        printf("data memory location:%d",node->memoryLocatin);
+        putchar('\n');
+        node = node->next;
+    }
+    
 }

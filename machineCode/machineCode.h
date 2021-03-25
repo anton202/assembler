@@ -5,7 +5,7 @@ typedef struct DataNode
 {
     struct DataNode *next;
     char *data;
-    
+    int memoryLocatin;
 }Data;
 
 
@@ -26,6 +26,8 @@ int getInstructionCount(void);
 int addInstructionToInstructionTable(Instruction *inst);
 void incInstructionCount(void);
 void printInstructionTable(void);
+void changeMemoryLocation(int newMemoryLocation);
+void printDataTable(void);
 
 
 

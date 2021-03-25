@@ -15,6 +15,30 @@
 #define MAX_SYMBOL_LENGTH 31
 #define MAX_STRING_LENGTH 70
 
+
+
+int commentLine(char *line)
+{
+    if(*line == ';')
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int emptyLine(char *line, int *lineIndex)
+{
+    while (isspace(*(line + *lineIndex)))
+    {
+        *lineIndex += 1;
+    }
+    if(*(line + *lineIndex) == '\0')
+    {
+        return 1;
+    }
+    return 0;
+}
+
 /*
 check if first input in the given line is a symbol decleration.
 if its a symbol decleration, the function saves the symbol and advances the line pointer
@@ -153,13 +177,15 @@ int getNumber(char *line, int *number, int *lineIndex)
     numberString[k] = '\0';
     c = *(line + i);
 
-    if (c != ',' && c != ' ')
+    if (c != ',' && c != ' ' && c != '\0')
     {
         return c;
     }
-
+ 
     *number = sign * atoi(numberString);
+  
     *lineIndex = i;
+   
     return 0;
 }
 
@@ -182,7 +208,9 @@ int readAndSaveDataDirective_Data(char *line, int *lineIndex, int lineNumber)
 
     do
     {
+      
         getNumberStatus = getNumber(line, &number, lineIndex);
+       
         if (getNumberStatus)
         {
             /*hnadle error*/
@@ -199,7 +227,7 @@ int readAndSaveDataDirective_Data(char *line, int *lineIndex, int lineNumber)
             printf("\nline number %d Error: number %d is to big\n", lineNumber, number);
             return 0;
         }
-
+   
     } while (checkIfSemicolon(line, lineIndex, lineNumber) != -1);
 
     return 1;

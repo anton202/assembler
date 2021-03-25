@@ -16,6 +16,9 @@ int main(int argc, char *argv[])
     FILE *fp;
     int lineNumber = 1;
     int error = 0;
+    int i = 1;
+    int DCF, ICF;
+
 
     if (argc == 1)
     {
@@ -30,16 +33,36 @@ int main(int argc, char *argv[])
 
     fp = fopen(addExtentitonToFileName(argv[1]), "r");
 
-    while (readLine(line, fp, lineNumber) != EOF)
+    for (; i < argc; i++)
     {
-        if (!firstRun(line, lineNumber))
+        fp = fopen(addExtentitonToFileName(argv[i]), "r");
+
+        while (readLine(line, fp, lineNumber) != EOF)
         {
-            error = 1;
+            if (!firstRun(line, lineNumber))
+            {
+                error = 1;
+            }
+            lineNumber++;
         }
-        lineNumber++;
+        if(error)
+        {
+            return 0;
+        }
+
+        ICF = getInstructionCount();
+        DCF = getDataCount();
+
+        changeMemoryLocation(ICF);
+        /*Second run starts here*/
+
+        lineNumber = 1;
+        error = 0;
     }
 
-    /*printInstructionTable();*/
+    printInstructionTable();
+    printf("Data table: \n");
+    printDataTable();
     return 1;
 }
 
@@ -50,6 +73,11 @@ int firstRun(char *line, int lineNumber)
     Operands *operands;
     int symbolDecleration = 0;
     char *symbol, *operationName;
+
+    if(commentLine(line) || emptyLine(line, &lineIndex))
+    {
+        return 1;
+    }
 
     symbol = isSymbol(line, &lineIndex);
     if (symbol != NULL)
@@ -76,7 +104,7 @@ int firstRun(char *line, int lineNumber)
 
     if (!isDataDirective)
     {
-        return readAndSaveDataDirective_Data(line, &lineIndex,lineNumber);
+        return readAndSaveDataDirective_Data(line, &lineIndex, lineNumber);
     }
     else if (isDataDirective == 1)
     {
