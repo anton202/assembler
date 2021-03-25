@@ -5,8 +5,8 @@
 
 static int IC = MEMORY_START_LOCATION;
 static int i = 0;
+static int secondRunCounter = 0;
 static Instruction *instructionTable[MEMORY_SIZE];
-
 
 int getInstructionCount(void)
 {
@@ -21,20 +21,35 @@ void incInstructionCount(void)
 void printInstructionTable(void)
 {
     int c = 0;
-    for ( ;c < i; c++)
+    for (; c < i; c++)
     {
-        printf("\nMemory loation: %d\n",instructionTable[c]->memoryLocation);
+        printf("\nMemory loation: %d\n", instructionTable[c]->memoryLocation);
     }
-    
 }
 
-Instruction *createInstruction(char *instruction,int memoryLocation, int length, char ARE)
+int getSecondRoundCounter(void)
 {
-   
-    Instruction *inst = NULL;
-    inst = (Instruction*)malloc(sizeof(Instruction));
+    return secondRunCounter;
+}
 
-    if(inst == NULL){
+Instruction *getInstruction(int position)
+{
+    return instructionTable[position];
+}
+
+void increamentSecounRoundCounter(int inc)
+{
+    secondRunCounter += inc;
+}
+
+Instruction *createInstruction(char *instruction, int memoryLocation, int length, char ARE)
+{
+
+    Instruction *inst = NULL;
+    inst = (Instruction *)malloc(sizeof(Instruction));
+
+    if (inst == NULL)
+    {
         printf("Error: error ocured while allocating memorey for instruction");
         exit(0);
     }
@@ -49,14 +64,31 @@ Instruction *createInstruction(char *instruction,int memoryLocation, int length,
 
 int addInstructionToInstructionTable(Instruction *inst)
 {
-    if((i + getDataCount()) < MEMORY_SIZE)
+    if ((i + getDataCount()) < MEMORY_SIZE)
     {
         instructionTable[i] = inst;
         i++;
         IC++;
         return 1;
     }
-    printf("Error: not enough memory space, used memory: %d", i+getDataCount());
+    printf("Error: not enough memory space, used memory: %d", i + getDataCount());
     return 0;
 }
 
+char *getInstructionsBinaryCode(int memoryPos)
+{
+    int j;
+    for (j = 0; j < i; j++)
+    {
+        if (instructionTable[j]->memoryLocation == memoryPos)
+        {
+            return instructionTable[j]->instruction;
+        }
+    }
+    return NULL;
+}
+
+void saveInstructionAtSpecificPlace(char *instruction, int position, int memoryLocation, int length, char ARE)
+{
+    instructionTable[position] = createInstruction(instruction, memoryLocation, length, ARE);
+}

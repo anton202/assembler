@@ -28,6 +28,11 @@ void incInstructionCount(void);
 void printInstructionTable(void);
 void changeMemoryLocation(int newMemoryLocation);
 void printDataTable(void);
+int getSecondRoundCounter(void);
+Instruction *getInstruction(int position);
+void increamentSecounRoundCounter(int inc);
+char *getInstructionsBinaryCode(int memoryPos);
+void saveInstructionAtSpecificPlace(char *instruction, int position, int memoryLocation, int length, char ARE);
 
 
 

@@ -15,11 +15,9 @@
 #define MAX_SYMBOL_LENGTH 31
 #define MAX_STRING_LENGTH 70
 
-
-
 int commentLine(char *line)
 {
-    if(*line == ';')
+    if (*line == ';')
     {
         return 1;
     }
@@ -32,7 +30,7 @@ int emptyLine(char *line, int *lineIndex)
     {
         *lineIndex += 1;
     }
-    if(*(line + *lineIndex) == '\0')
+    if (*(line + *lineIndex) == '\0')
     {
         return 1;
     }
@@ -94,7 +92,7 @@ char *isSymbol(char *line, int *lineIndex)
 
 /*
 This function checks if there is .data / .string directive in the curent line.
-return: returns 0 if .data, returns 1 if .string.
+return: returns 0 if .data, returns 1 if .string, returns 2 if extern, returns 3 if entry, return -1 if none of these.
 */
 int checkIfDataDirective(char *line, int *lineIndex)
 {
@@ -181,11 +179,11 @@ int getNumber(char *line, int *number, int *lineIndex)
     {
         return c;
     }
- 
+
     *number = sign * atoi(numberString);
-  
+
     *lineIndex = i;
-   
+
     return 0;
 }
 
@@ -208,9 +206,9 @@ int readAndSaveDataDirective_Data(char *line, int *lineIndex, int lineNumber)
 
     do
     {
-      
+
         getNumberStatus = getNumber(line, &number, lineIndex);
-       
+
         if (getNumberStatus)
         {
             /*hnadle error*/
@@ -227,7 +225,7 @@ int readAndSaveDataDirective_Data(char *line, int *lineIndex, int lineNumber)
             printf("\nline number %d Error: number %d is to big\n", lineNumber, number);
             return 0;
         }
-   
+
     } while (checkIfSemicolon(line, lineIndex, lineNumber) != -1);
 
     return 1;
@@ -287,7 +285,7 @@ int readAndSaveStringDirective_data(char *line, int *lineIndex, int lineNumber)
     return 1;
 }
 
-char *getExternDirectiveSymbol(char *line, int *lineIndex)
+char *getExternOrEntryDirectiveSymbol(char *line, int *lineIndex)
 {
     int i = *lineIndex;
     int c, k = 0;
@@ -321,11 +319,11 @@ char *getExternDirectiveSymbol(char *line, int *lineIndex)
 int readAndSaveExternalSymbol(char *line, int *lineIndex, int lineNumber)
 {
     Symbol *externSymbol = NULL;
-    char *externalSymbol = getExternDirectiveSymbol(line, lineIndex);
+    char *externalSymbol = getExternOrEntryDirectiveSymbol(line, lineIndex);
 
     if (isSymbolValid(externalSymbol, lineNumber) && !isSymbolDefined(externalSymbol, lineNumber) && !isRegisterName(externalSymbol, lineNumber))
     {
-        externSymbol = createSymbol(externalSymbol, getDataCount(), "external", "\0");
+        externSymbol = createSymbol(externalSymbol, 0, "external", "\0");
         if (insertSymbol(externSymbol) == NULL)
         {
             if (!checkIfExternalAtribute(externSymbol))
@@ -701,4 +699,92 @@ void saveAdditionalWord(int addressingMode, char *binaryCode)
     default:
         break;
     }
+}
+
+int readAndSaveEntryDirectiveSymbol(char *line, int *lineIndex, int linenNumber)
+{
+    char *symbol = getExternOrEntryDirectiveSymbol(line, lineIndex);
+    Symbol *savedSymbol = searchSymbol(symbol);
+    if (savedSymbol == NULL)
+    {
+        printf("\nline number: %d Error: symbol: %s does not defined in this file.\n", linenNumber, symbol);
+        return 1;
+    }
+    savedSymbol->attributes[1] = "entry";
+    return 1;
+}
+
+int readAndCodeSymbolOperands(char *line, int *lineIndex, int lineNumber)
+{
+    Instruction *insNode;
+    char *operands[2];
+    Symbol *symbol;
+    char *binaryCode;
+    int addressingMode;
+    int number;
+    int i = 0;
+
+    getOperationName(line, lineIndex);
+
+    insNode = getInstruction(getSecondRoundCounter());
+
+    if (insNode->instructionLength == 2)
+    {
+        operands[0] = readOperand(line, lineIndex, lineNumber);
+
+        /*skip white space and coln*/
+        while (isspace(*(line + *lineIndex)) || *(line + *lineIndex) == ',')
+        {
+            *lineIndex += 1;
+        }
+
+        operands[1] = readOperand(line, lineIndex, lineNumber);
+    }
+
+    if (insNode->instructionLength == 1)
+    {
+        operands[0] = readOperand(line, lineIndex, lineNumber);
+    }
+    if (insNode->instructionLength == 0)
+    {
+        return 1;
+    }
+
+    while (i < insNode->instructionLength)
+    {
+        addressingMode = getOperandsAddressingMode(operands[i], lineNumber, &number);
+        if (addressingMode == 1)
+        {
+            symbol = searchSymbol(operands[i]);
+            if (symbol == NULL)
+            {
+                printf("\nline number: %d Error: symbol %s dose not exist.\n", lineNumber, operands[i]);
+                continue;
+            }
+            if (strcmp(symbol->attributes[0], "external") != 0)
+            {
+                binaryCode = getInstructionsBinaryCode(symbol->value);
+                if (binaryCode == NULL)
+                {
+                    printf("\nline number %d: Error: memory location was not found\n", lineNumber);
+                    continue;
+                }
+                saveInstructionAtSpecificPlace(binaryCode, getSecondRoundCounter() + i, insNode->memoryLocation + i, 1, 'R');
+            }
+            else
+            {
+                /*save current memory location in externaal symbols table and save instruction with E char and 
+                00000000000 as the instruction
+                */
+            }
+        }
+        else if (addressingMode == 2)
+        {
+        }
+
+        i++;
+    }
+
+    increamentSecounRoundCounter(insNode->instructionLength);
+    return 1;
 }

@@ -19,7 +19,6 @@ int main(int argc, char *argv[])
     int i = 1;
     int DCF, ICF;
 
-
     if (argc == 1)
     {
         printf("\nError: Please enter file name\n");
@@ -45,7 +44,7 @@ int main(int argc, char *argv[])
             }
             lineNumber++;
         }
-        if(error)
+        if (error)
         {
             return 0;
         }
@@ -55,11 +54,22 @@ int main(int argc, char *argv[])
 
         changeMemoryLocation(ICF);
         /*Second run starts here*/
-
         lineNumber = 1;
         error = 0;
+
+        fseek(fp, 0, SEEK_SET);
+        while (readLine(line, fp, lineNUmber) != EOF)
+        {
+            secondRun(line, lineNumber);
+        }
+
+        fclose(fp);
     }
 
+
+    /*
+        create output files
+    */
     printInstructionTable();
     printf("Data table: \n");
     printDataTable();
@@ -74,7 +84,7 @@ int firstRun(char *line, int lineNumber)
     int symbolDecleration = 0;
     char *symbol, *operationName;
 
-    if(commentLine(line) || emptyLine(line, &lineIndex))
+    if (commentLine(line) || emptyLine(line, &lineIndex))
     {
         return 1;
     }
@@ -160,4 +170,25 @@ int firstRun(char *line, int lineNumber)
     saveAdditionalWord(operands->destenationOpAddressongMode, operands->destenationOpBinaryCode);
 
     return 1;
+}
+
+int secondRun(char *line, int lineNumber)
+{
+    int lineIndex = 0;
+    int whichDirective;
+
+    /*skips symbol declaration*/
+    isSymbol();
+    whichDirective = checkIfDataDirective(line, &lineIndex);
+
+    if (!whichDirective || whichDirective == 1 || whichDirective == 2)
+    {
+        return 1;
+    }
+    else if (whichDirective == 3)
+    {
+        return readAndSaveEntryDirectiveSymbol(line, &lineIndex, lineNumber);
+    }
+
+    return readAndCodeSymbolOperands(line,lineIndex);
 }
