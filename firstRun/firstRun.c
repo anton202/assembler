@@ -677,7 +677,7 @@ void saveAdditionalWord(int addressingMode, char *binaryCode)
     case 0:
         if (binaryCode != NULL)
         {
-            addInstructionToInstructionTable(createInstruction(binaryCode, getInstructionCount(), 1, 'A'));
+            addInstructionToInstructionTable(createInstruction(binaryCode, getInstructionCount(), 0, 'A'));
         }
         break;
 
@@ -692,7 +692,7 @@ void saveAdditionalWord(int addressingMode, char *binaryCode)
     case 3:
         if (binaryCode != NULL)
         {
-            addInstructionToInstructionTable(createInstruction(binaryCode, getInstructionCount(), 1, 'A'));
+            addInstructionToInstructionTable(createInstruction(binaryCode, getInstructionCount(), 0, 'A'));
         }
         break;
 
@@ -721,12 +721,15 @@ int readAndCodeSymbolOperands(char *line, int *lineIndex, int lineNumber)
     Symbol *symbol;
     char *binaryCode;
     int addressingMode;
-    int number;
+    int number, relativeOpValue;
     int i = 0;
 
     getOperationName(line, lineIndex);
 
     insNode = getInstruction(getSecondRoundCounter());
+
+    /*printf("\ninstruction counter second round %d\n",getSecondRoundCounter());
+    printf("\ninstruction length %d\n",insNode->instructionLength);*/
 
     if (insNode->instructionLength == 2)
     {
@@ -759,32 +762,63 @@ int readAndCodeSymbolOperands(char *line, int *lineIndex, int lineNumber)
             if (symbol == NULL)
             {
                 printf("\nline number: %d Error: symbol %s dose not exist.\n", lineNumber, operands[i]);
-                continue;
+                return 0;
             }
             if (strcmp(symbol->attributes[0], "external") != 0)
             {
-                binaryCode = getInstructionsBinaryCode(symbol->value);
-                if (binaryCode == NULL)
-                {
-                    printf("\nline number %d: Error: memory location was not found\n", lineNumber);
-                    continue;
-                }
-                saveInstructionAtSpecificPlace(binaryCode, getSecondRoundCounter() + i, insNode->memoryLocation + i, 1, 'R');
+                binaryCode = convertNumberToBinary(symbol->value);
+                saveInstructionAtSpecificPlace(binaryCode, getSecondRoundCounter() + i + 1, insNode->memoryLocation + i + 1, 0, 'R');
             }
             else
             {
                 /*save current memory location in externaal symbols table and save instruction with E char and 
                 00000000000 as the instruction
                 */
+                insertExternalSymbol(createExternalSymbol(operands[i], insNode->memoryLocation + i));
+                saveInstructionAtSpecificPlace("\0\0\0\0\0\0\0\0\0\0\0",getSecondRoundCounter() + i +1,insNode->memoryLocation + i +1,0,'E');
             }
         }
         else if (addressingMode == 2)
         {
+            if((relativeOpValue = relativeOperand(insNode->memoryLocation,operands[i],lineNumber)) == -1)
+            {
+                return 0;
+            }
+            saveInstructionAtSpecificPlace(convertNumberToBinary(relativeOpValue),getSecondRoundCounter() + i +1, insNode->memoryLocation + i +1,0,'R');
         }
 
         i++;
     }
 
-    increamentSecounRoundCounter(insNode->instructionLength);
+    increamentSecounRoundCounter(insNode->instructionLength +1);
     return 1;
+}
+
+
+int relativeOperand(int instructionValue, char *symbol, int lineNumber)
+{
+    Symbol *savedSymbol;
+
+    if((savedSymbol = searchSymbol(symbol+1)) == NULL)
+    {
+        printf("line number: %d Error: symbol: %s does not exits",lineNumber, symbol);
+        return -1;
+    }
+
+    if(!strcmp(savedSymbol->attributes[0],"external") || !strcmp(savedSymbol->attributes[1],"external") )
+    {
+        printf("line number: %d Error: external symbol cant be used in jmp instruction",lineNumber);
+        return -1;
+    }
+
+    if(savedSymbol->value > instructionValue)
+    {
+        return (instructionValue + savedSymbol->value + 1);
+    }else if (savedSymbol->value < instructionValue)
+    {
+        return savedSymbol->value - (instructionValue + 1);
+    }
+    
+    printf("line number: %d Error: to avoid an infint loop please use a diffrent symbol", lineNumber);
+    return -1;
 }

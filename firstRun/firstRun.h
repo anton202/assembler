@@ -30,6 +30,11 @@ char *createFirstWord(char *operationName, Operands *operands);
 void saveFirstWord(char *word, Operands *operands);
 void saveAdditionalWord(int addressingMode, char *binaryCode);
 int readAndSaveEntryDirectiveSymbol(char *line, int *lineIndex, int linenNumber);
+int readAndCodeSymbolOperands(char *line, int *lineIndex, int lineNumber);
+int relativeOperand(int instructionValue, char *symbol, int lineNumber);
+int secondRun(char *line, int lineNumber);
+
+
 
 
 

@@ -69,6 +69,30 @@ void printHead()
     printf("symbol name at head:%s, value: %d \n", symbolTabel->symbol, symbolTabel->value);
 }
 
+void printSymbolTable(void){
+    Symbol *node = symbolTabel;
+
+    while (node != NULL)
+    {
+        printf("\nsymbol name :%s, value: %d \n", node->symbol, node->value);
+        node = node->next;
+    }
+    
+}
+
+void changeSymbolMemoryLocation(int newMemoryLocation)
+{
+    Symbol *node = symbolTabel;
+    while (node != NULL)
+    {
+        if(!strcmp(node->attributes[0],"data") || !strcmp(node->attributes[0],"data")){
+        node->value = node->value + newMemoryLocation;
+        }
+        node = node->next;
+    }
+    
+}
+
 int checkIfExternalAtribute(Symbol *externSymbol)
 {
     Symbol *sym = searchSymbol(externSymbol->symbol);

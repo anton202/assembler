@@ -16,14 +16,23 @@ int getInstructionCount(void)
 void incInstructionCount(void)
 {
     IC++;
+    i++;
 }
 
 void printInstructionTable(void)
 {
     int c = 0;
+    int k = 0;
     for (; c < i; c++)
     {
-        printf("\nMemory loation: %d\n", instructionTable[c]->memoryLocation);
+        printf("\nMemory loation: %d binary code: ", instructionTable[c]->memoryLocation);
+        for (k = 0; k < 12; k++)
+        {
+           printf("%d ", instructionTable[c]->instruction[k]);
+        }
+        
+    putchar('\n');
+      
     }
 }
 
@@ -75,7 +84,7 @@ int addInstructionToInstructionTable(Instruction *inst)
     return 0;
 }
 
-char *getInstructionsBinaryCode(int memoryPos)
+/*char *getInstructionsBinaryCode(int memoryPos)
 {
     int j;
     for (j = 0; j < i; j++)
@@ -86,9 +95,11 @@ char *getInstructionsBinaryCode(int memoryPos)
         }
     }
     return NULL;
-}
+}*/
 
 void saveInstructionAtSpecificPlace(char *instruction, int position, int memoryLocation, int length, char ARE)
 {
     instructionTable[position] = createInstruction(instruction, memoryLocation, length, ARE);
+    printf("\ninside save instructaion at specific place: position: %d\n",position);
+
 }

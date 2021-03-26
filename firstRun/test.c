@@ -52,27 +52,31 @@ int main(int argc, char *argv[])
         ICF = getInstructionCount();
         DCF = getDataCount();
 
+        changeSymbolMemoryLocation(ICF);
         changeMemoryLocation(ICF);
         /*Second run starts here*/
         lineNumber = 1;
         error = 0;
 
-        fseek(fp, 0, SEEK_SET);
-        while (readLine(line, fp, lineNUmber) != EOF)
+       fseek(fp, 0, SEEK_SET);
+       while (readLine(line, fp, lineNumber) != EOF)
         {
-            secondRun(line, lineNumber);
+            if (!secondRun(line, lineNumber))
+            {
+                error = 1;
+            }
+            lineNumber++;
         }
-
         fclose(fp);
     }
-
 
     /*
         create output files
     */
     printInstructionTable();
-    printf("Data table: \n");
+   /* printf("Data table: \n");*/
     printDataTable();
+    printSymbolTable();
     return 1;
 }
 
@@ -177,8 +181,13 @@ int secondRun(char *line, int lineNumber)
     int lineIndex = 0;
     int whichDirective;
 
+     if (commentLine(line) || emptyLine(line, &lineIndex))
+    {
+        return 1;
+    }
+
     /*skips symbol declaration*/
-    isSymbol();
+    isSymbol(line, &lineIndex);
     whichDirective = checkIfDataDirective(line, &lineIndex);
 
     if (!whichDirective || whichDirective == 1 || whichDirective == 2)
@@ -190,5 +199,5 @@ int secondRun(char *line, int lineNumber)
         return readAndSaveEntryDirectiveSymbol(line, &lineIndex, lineNumber);
     }
 
-    return readAndCodeSymbolOperands(line,lineIndex);
+    return readAndCodeSymbolOperands(line, &lineIndex, lineNumber);
 }
