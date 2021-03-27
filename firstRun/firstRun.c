@@ -56,7 +56,7 @@ char *isSymbol(char *line, int *lineIndex)
         k++;
     }
     /*add && != EOF becuse you might get a file that containes only one word*/
-    while ((c = *(line + k)) != ' ' && c != ':')
+    while ((c = *(line + k)) != ' ' && c != ':' && c != '\t')
     {
         i++;
         k++;
@@ -111,7 +111,7 @@ int checkIfDataDirective(char *line, int *lineIndex)
         return -1;
     }
 
-    while ((c = *(line + i)) != ' ' && c != EOF && k < 7)
+    while ((c = *(line + i)) != ' ' && c != EOF && c != '\t' && k < 7)
     {
         data[k] = c;
         i++;
@@ -192,7 +192,7 @@ int readAndSaveDataDirective_Data(char *line, int *lineIndex, int lineNumber)
     int getNumberStatus = 0;
     int number;
     /*check if there is at least on space betwen .data and a number*/
-    if (*(line + *lineIndex) != ' ')
+    if (*(line + *lineIndex) != ' ' && *(line + *lineIndex) != '\t')
     {
         printf("line number %d Erorr: there must be at least one space between .data and the data itself", lineNumber);
         return 0;
@@ -293,6 +293,7 @@ char *getExternOrEntryDirectiveSymbol(char *line, int *lineIndex)
 
     symbolArr = (char *)malloc(73);
 
+
     if (symbolArr == NULL)
     {
         printf("Error: error ocured while allocating memory");
@@ -304,15 +305,16 @@ char *getExternOrEntryDirectiveSymbol(char *line, int *lineIndex)
         i++;
     }
 
-    while ((c = *(line + i)) != ' ' && c != '\0')
+    while ((c = *(line + i)) != ' ' && c != '\0' && c != '\t' )
     {
+       
         symbolArr[k] = c;
         k++;
         i++;
     }
 
     *lineIndex = i;
-
+    symbolArr[k] = '\0';
     return symbolArr;
 }
 
@@ -320,7 +322,7 @@ int readAndSaveExternalSymbol(char *line, int *lineIndex, int lineNumber)
 {
     Symbol *externSymbol = NULL;
     char *externalSymbol = getExternOrEntryDirectiveSymbol(line, lineIndex);
-
+    
     if (isSymbolValid(externalSymbol, lineNumber) && !isSymbolDefined(externalSymbol, lineNumber) && !isRegisterName(externalSymbol, lineNumber))
     {
         externSymbol = createSymbol(externalSymbol, 0, "external", "\0");
@@ -337,6 +339,8 @@ int readAndSaveExternalSymbol(char *line, int *lineIndex, int lineNumber)
             printf("line number: %d Error: .extern directive accept only one parameter\n.", lineNumber);
             return 0;
         }
+    }else{
+        return 0;
     }
     return 1;
 }
@@ -368,7 +372,7 @@ char *getOperationName(char *line, int *lineIndex)
         i++;
     }
 
-    while ((c = *(line + i)) != ' ' && c != '\0')
+    while ((c = *(line + i)) != ' ' && c != '\0' && c != '\t')
     {
         opName[k] = c;
         k++;
@@ -607,7 +611,7 @@ char *createFirstWord(char *operationName, Operands *operands)
     {
         word[i] = opFunct[i];
     }
-
+    
     switch (operands->sourceOpAddresingMode)
     {
     case 0:
@@ -631,6 +635,8 @@ char *createFirstWord(char *operationName, Operands *operands)
         break;
 
     default:
+        word[8] = 0;
+        word[9] = 0;
         break;
     }
 
@@ -657,6 +663,8 @@ char *createFirstWord(char *operationName, Operands *operands)
         break;
 
     default:
+        word[10] = 0;
+        word[11] = 0;
         break;
     }
 
@@ -672,6 +680,7 @@ void saveFirstWord(char *word, Operands *operands)
 
 void saveAdditionalWord(int addressingMode, char *binaryCode)
 {
+
     switch (addressingMode)
     {
     case 0:
@@ -728,9 +737,6 @@ int readAndCodeSymbolOperands(char *line, int *lineIndex, int lineNumber)
 
     insNode = getInstruction(getSecondRoundCounter());
 
-    /*printf("\ninstruction counter second round %d\n",getSecondRoundCounter());
-    printf("\ninstruction length %d\n",insNode->instructionLength);*/
-
     if (insNode->instructionLength == 2)
     {
         operands[0] = readOperand(line, lineIndex, lineNumber);
@@ -774,51 +780,46 @@ int readAndCodeSymbolOperands(char *line, int *lineIndex, int lineNumber)
                 /*save current memory location in externaal symbols table and save instruction with E char and 
                 00000000000 as the instruction
                 */
-                insertExternalSymbol(createExternalSymbol(operands[i], insNode->memoryLocation + i));
-                saveInstructionAtSpecificPlace("\0\0\0\0\0\0\0\0\0\0\0",getSecondRoundCounter() + i +1,insNode->memoryLocation + i +1,0,'E');
+                insertExternalSymbol(createExternalSymbol(operands[i], insNode->memoryLocation + i + 1));
+                saveInstructionAtSpecificPlace("\0\0\0\0\0\0\0\0\0\0\0", getSecondRoundCounter() + i + 1, insNode->memoryLocation + i + 1, 0, 'E');
             }
         }
         else if (addressingMode == 2)
         {
-            if((relativeOpValue = relativeOperand(insNode->memoryLocation,operands[i],lineNumber)) == -1)
+            if ((relativeOpValue = relativeOperand(insNode->memoryLocation, operands[i], lineNumber)) == -1)
             {
                 return 0;
             }
-            saveInstructionAtSpecificPlace(convertNumberToBinary(relativeOpValue),getSecondRoundCounter() + i +1, insNode->memoryLocation + i +1,0,'R');
+            saveInstructionAtSpecificPlace(convertNumberToBinary(relativeOpValue), getSecondRoundCounter() + i + 1, insNode->memoryLocation + i + 1, 0, 'A');
         }
 
         i++;
     }
 
-    increamentSecounRoundCounter(insNode->instructionLength +1);
+    increamentSecounRoundCounter(insNode->instructionLength + 1);
     return 1;
 }
-
 
 int relativeOperand(int instructionValue, char *symbol, int lineNumber)
 {
     Symbol *savedSymbol;
 
-    if((savedSymbol = searchSymbol(symbol+1)) == NULL)
+    if ((savedSymbol = searchSymbol(symbol + 1)) == NULL)
     {
-        printf("line number: %d Error: symbol: %s does not exits",lineNumber, symbol);
+        printf("line number: %d Error: symbol: %s does not exits", lineNumber, symbol);
         return -1;
     }
 
-    if(!strcmp(savedSymbol->attributes[0],"external") || !strcmp(savedSymbol->attributes[1],"external") )
+    if (!strcmp(savedSymbol->attributes[0], "external") || !strcmp(savedSymbol->attributes[1], "external"))
     {
-        printf("line number: %d Error: external symbol cant be used in jmp instruction",lineNumber);
+        printf("line number: %d Error: external symbol cant be used in jmp instruction", lineNumber);
         return -1;
     }
 
-    if(savedSymbol->value > instructionValue)
+    if (savedSymbol->value == instructionValue)
     {
-        return (instructionValue + savedSymbol->value + 1);
-    }else if (savedSymbol->value < instructionValue)
-    {
-        return savedSymbol->value - (instructionValue + 1);
+        printf("line number: %d Error: to avoid an infint loop please use a diffrent symbol", lineNumber);
+        return -1;
     }
-    
-    printf("line number: %d Error: to avoid an infint loop please use a diffrent symbol", lineNumber);
-    return -1;
+    return savedSymbol->value - (instructionValue + 1);
 }

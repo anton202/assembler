@@ -2,12 +2,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <math.h>
 #include "utility.h"
 #include "../tables/symbolTable/symbolTable.h"
 #include "../tables/tables.h"
 #include "../hellper/hellper.h"
 
-char *addExtentitonToFileName(char *fileName)
+char *addExtentitonToFileName(char *fileName,char *ext)
 {
     char *fileNameWithExtantion = NULL;
     int extentionLength = 4; /* .as + \0*/
@@ -15,7 +16,7 @@ char *addExtentitonToFileName(char *fileName)
 
     fileNameWithExtantion = (char *)malloc(fileNameLength + extentionLength);
     strcpy(fileNameWithExtantion, fileName);
-    return strcat(fileNameWithExtantion, ".as");
+    return strcat(fileNameWithExtantion, ext);
 }
 
 static int checkForFileExtention(char *fileName)
@@ -46,7 +47,7 @@ int checkFiles(int length, char **fileNames)
             return -1;
         }
 
-        fileNameWithAsExtention = addExtentitonToFileName(*(fileNames + i));
+        fileNameWithAsExtention = addExtentitonToFileName(*(fileNames + i),".as");
         fp = fopen(fileNameWithAsExtention, "r");
 
         if (fp == NULL)
@@ -65,7 +66,13 @@ int checkFiles(int length, char **fileNames)
 char *convertToBinary(int number)
 {
     int i = 11;
+    int k = 0;
     char *numArray = (char *)malloc(12);
+
+    for (; k < 12; k++)
+    {
+        numArray[k] = '\0';
+    }
 
     if (numArray == NULL)
     {
@@ -76,6 +83,7 @@ char *convertToBinary(int number)
     do
     {
         numArray[i] = number % 2;
+
         i--;
     } while ((number /= 2) > 0);
 
@@ -116,23 +124,13 @@ char *twosComplement(char *number)
 
 char *convertNumberToBinary(int number)
 {
-    char *pNumber = NULL;
-
     if (number > 0)
     {
         return convertToBinary(number);
     }
-    pNumber = convertToBinary(-(number));
-    return twosComplement(pNumber);
+
+    return twosComplement(convertToBinary(-(number)));
 }
-
-/*char *convertNumberOpToBinary(char *operand, int lineNumber)
-{
-    int number;
-
-    number = isImmedtiateOperand(operand, lineNumber);
-    return convertToBinary(number);
-}*/
 
 int isImmedtiateOperand(char *operand, int lineNumber, int *number)
 {
@@ -183,6 +181,7 @@ int isImmedtiateOperand(char *operand, int lineNumber, int *number)
 
 int isSymbolValid(char *symbol, int lineNumber)
 {
+    
     if (strlen(symbol) > MAX_SYMBOL_LENGTH)
     {
         printf("\n line number: %d :Error: symbol name must be less than 31 characters.", lineNumber);
@@ -197,7 +196,7 @@ int isSymbolValid(char *symbol, int lineNumber)
     }
     if (!strcmp(symbol, "data") || !strcmp(symbol, "string") || !strcmp(symbol, "entry") || !strcmp(symbol, "extern"))
     {
-        printf("line number: %d Error: %s is a saved word in assembly", lineNumber, symbol);
+        printf("\nline number: %d Error: %s is a saved word in assembly", lineNumber, symbol);
         free(symbol);
         return 0;
     }
@@ -210,7 +209,7 @@ int isSymbolValid(char *symbol, int lineNumber)
 
     if (!checkForNotAlphaNumericChars(symbol))
     {
-        printf("line number: %d Error: symbol name must only contain aqalphabet or number charecters\n", lineNumber);
+        printf("\nline number: %d Error: symbol name must only contain aqalphabet or number charecters\n", lineNumber);
         free(symbol);
         return 0;
     }
@@ -291,9 +290,9 @@ char *readOperand(char *line, int *lineIndex, int lineNumber)
     int c, k = 0;
     char *operand = (char *)malloc(80);
 
-    if(operand == NULL)
+    if (operand == NULL)
     {
-        printf("\nline number: %d Error occured while allocating memory\n",lineNumber);
+        printf("\nline number: %d Error occured while allocating memory\n", lineNumber);
         exit(0);
     }
 
@@ -302,7 +301,7 @@ char *readOperand(char *line, int *lineIndex, int lineNumber)
         i++;
     }
 
-    while ((c = *(line + i)) != ' ' && c != ',' && c != '\0')
+    while ((c = *(line + i)) != ' ' && c != ',' && c != '\0' && c != '\t')
     {
         operand[k++] = c;
         i++;
@@ -311,4 +310,67 @@ char *readOperand(char *line, int *lineIndex, int lineNumber)
     operand[k] = '\0';
     *lineIndex = i;
     return operand;
+}
+
+char *converBinaryToHex(char *binaryNumber)
+{
+     int counter = 0;
+     int i, sum = 0;
+     int hexPos = 2;
+     char *hexNum = (char *)malloc(4);
+
+     if (hexNum == NULL)
+     {
+          printf("\nError ocured while allocation memory for output file\n");
+          exit(0);
+     }
+
+     for (i = 11; i >= 0; i--)
+     {
+          if (counter < 3)
+          {
+               sum += (binaryNumber[i]) * pow(2, counter);
+               counter++;
+          }
+          else
+          {
+               sum += (binaryNumber[i]) * pow(2, (counter));
+               switch (sum)
+               {
+               case 10:
+                    hexNum[hexPos] = 'A';
+                    break;
+
+               case 11:
+                    hexNum[hexPos] = 'B';
+                    break;
+
+               case 12:
+                    hexNum[hexPos] = 'C';
+                    break;
+
+               case 13:
+                    hexNum[hexPos] = 'D';
+                    break;
+
+               case 14:
+                    hexNum[hexPos] = 'E';
+                    break;
+
+               case 15:
+                    hexNum[hexPos] = 'F';
+                    break;
+
+               default:
+                    hexNum[hexPos] = 48 + sum;
+                    break;
+               }
+
+               hexPos--;
+               sum = 0;
+               counter = 0;
+          }
+     }
+     hexNum[3] = '\0';
+     return hexNum;
 }

@@ -68,6 +68,7 @@ int checkIfSemicolon(char *line, int *lineIndex, int lineNumber)
     printf("\nline number: %d Error: numbers must be seperated by comma", lineNumber);
     return -1;
 }
+
 /*
 This function checks if there are charecters in the given line that are not space chars.
 return 1 if not space char was found. return 0 if only space chars found.

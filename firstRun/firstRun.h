@@ -33,6 +33,7 @@ int readAndSaveEntryDirectiveSymbol(char *line, int *lineIndex, int linenNumber)
 int readAndCodeSymbolOperands(char *line, int *lineIndex, int lineNumber);
 int relativeOperand(int instructionValue, char *symbol, int lineNumber);
 int secondRun(char *line, int lineNumber);
+int firstRun(char *line, int lineNumber);
 
 
 

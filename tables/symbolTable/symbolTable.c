@@ -1,7 +1,8 @@
-#include "symbolTable.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "symbolTable.h"
+#include "../../utility/utility.h"
 
 static Symbol *symbolTabel = NULL;
 
@@ -69,7 +70,8 @@ void printHead()
     printf("symbol name at head:%s, value: %d \n", symbolTabel->symbol, symbolTabel->value);
 }
 
-void printSymbolTable(void){
+void printSymbolTable(void)
+{
     Symbol *node = symbolTabel;
 
     while (node != NULL)
@@ -77,7 +79,6 @@ void printSymbolTable(void){
         printf("\nsymbol name :%s, value: %d \n", node->symbol, node->value);
         node = node->next;
     }
-    
 }
 
 void changeSymbolMemoryLocation(int newMemoryLocation)
@@ -85,12 +86,12 @@ void changeSymbolMemoryLocation(int newMemoryLocation)
     Symbol *node = symbolTabel;
     while (node != NULL)
     {
-        if(!strcmp(node->attributes[0],"data") || !strcmp(node->attributes[0],"data")){
-        node->value = node->value + newMemoryLocation;
+        if (!strcmp(node->attributes[0], "data") || !strcmp(node->attributes[0], "data"))
+        {
+            node->value = node->value + newMemoryLocation;
         }
         node = node->next;
     }
-    
 }
 
 int checkIfExternalAtribute(Symbol *externSymbol)
@@ -109,4 +110,46 @@ int checkIfExternalAtribute(Symbol *externSymbol)
         }
     }
     return 0;
+}
+
+void resetSymbolTable(void)
+{
+    cleanSymbolPointer(symbolTabel);
+    symbolTabel = NULL;
+}
+
+void cleanSymbolPointer(Symbol *node)
+{
+    if (node->next != NULL)
+    {
+        cleanSymbolPointer(node->next);
+    }
+    if (node != NULL)
+    {
+        free(node);
+    }
+}
+
+void createEntFile(char *fileName)
+{
+    Symbol *node = symbolTabel;
+    FILE *fp = NULL;
+
+    while (node != NULL)
+    {
+
+        if (!strcmp(node->attributes[1], "entry"))
+        {
+            if (fp == NULL)
+            {
+                fp = fopen(addExtentitonToFileName(fileName, ".ent"), "w");
+            }
+            fprintf(fp, "%s 0%d\n", node->symbol, node->value);
+        }
+        node = node->next;
+    }
+    if (fp != NULL)
+    {
+        fclose(fp);
+    }
 }

@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 #include "firstRun.h"
 #include "../hellper/hellper.h"
 #include "../utility/utility.h"
 #include "../tables/tables.h"
 #include "../machineCode/machineCode.h"
 #include "../tables/symbolTable/symbolTable.h"
-
-int firstRun(char *line, int lineNumber);
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +16,7 @@ int main(int argc, char *argv[])
     int lineNumber = 1;
     int error = 0;
     int i = 1;
-    int DCF, ICF;
+    int ICF;
 
     if (argc == 1)
     {
@@ -30,11 +29,9 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    fp = fopen(addExtentitonToFileName(argv[1]), "r");
-
     for (; i < argc; i++)
     {
-        fp = fopen(addExtentitonToFileName(argv[i]), "r");
+        fp = fopen(addExtentitonToFileName(argv[i], ".as"), "r");
 
         while (readLine(line, fp, lineNumber) != EOF)
         {
@@ -50,16 +47,16 @@ int main(int argc, char *argv[])
         }
 
         ICF = getInstructionCount();
-        DCF = getDataCount();
-
+      
         changeSymbolMemoryLocation(ICF);
         changeMemoryLocation(ICF);
+
         /*Second run starts here*/
         lineNumber = 1;
         error = 0;
 
-       fseek(fp, 0, SEEK_SET);
-       while (readLine(line, fp, lineNumber) != EOF)
+        fseek(fp, 0, SEEK_SET);
+        while (readLine(line, fp, lineNumber) != EOF)
         {
             if (!secondRun(line, lineNumber))
             {
@@ -67,16 +64,30 @@ int main(int argc, char *argv[])
             }
             lineNumber++;
         }
-        fclose(fp);
-    }
 
-    /*
+        fclose(fp);
+
+        if(error)
+        {
+            return 0;
+        }
+        /*
         create output files
     */
-    printInstructionTable();
-   /* printf("Data table: \n");*/
-    printDataTable();
-    printSymbolTable();
+
+        createObjectFile(argv[i]);
+        createExtFile(argv[i]);
+        createEntFile(argv[i]);
+
+        resetDataTable();
+        resetInstructionTabale();
+        resetSymbolTable();
+        resetExternalSymbolTable();
+        lineNumber = 1;
+        error = 0;
+        ICF = 0;
+    }
+
     return 1;
 }
 
@@ -105,13 +116,13 @@ int firstRun(char *line, int lineNumber)
     {
         if (symbolDecleration)
         {
-            if (!isSymbolValid(symbol, 1) && isRegisterName(symbol, 1) && isSymbolDefined(symbol, 1))
+            if (!isSymbolValid(symbol, lineNumber) && isRegisterName(symbol, lineNumber) && isSymbolDefined(symbol, lineNumber))
             {
                 return 0;
             }
             else
             {
-                insertSymbol(createSymbol(symbol, getDataCount(), "data", '\0'));
+                insertSymbol(createSymbol(symbol, getDataCount(), "data", "\0"));
             }
         }
     }
@@ -151,7 +162,7 @@ int firstRun(char *line, int lineNumber)
         return 0;
     }
 
-    if (strcmp("rts", operationName) != 0 && strcmp("stop", operationName) && *(line + lineIndex) != ' ')
+    if (strcmp("rts", operationName) != 0 && strcmp("stop", operationName) && *(line + lineIndex) != ' ' && *(line + lineIndex) != '\t')
     {
         printf("line number: %d Error: There must be at least one space betwen an operation name and the first argument", lineNumber);
         return 0;
@@ -172,6 +183,7 @@ int firstRun(char *line, int lineNumber)
     saveFirstWord(createFirstWord(operationName, operands), operands);
     saveAdditionalWord(operands->sourceOpAddresingMode, operands->sourceOpBinaryCode);
     saveAdditionalWord(operands->destenationOpAddressongMode, operands->destenationOpBinaryCode);
+    free(operands);
 
     return 1;
 }
@@ -181,7 +193,7 @@ int secondRun(char *line, int lineNumber)
     int lineIndex = 0;
     int whichDirective;
 
-     if (commentLine(line) || emptyLine(line, &lineIndex))
+    if (commentLine(line) || emptyLine(line, &lineIndex))
     {
         return 1;
     }

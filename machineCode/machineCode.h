@@ -6,6 +6,7 @@ typedef struct DataNode
     struct DataNode *next;
     char *data;
     int memoryLocatin;
+    char ARE;
 }Data;
 
 
@@ -31,8 +32,12 @@ void printDataTable(void);
 int getSecondRoundCounter(void);
 Instruction *getInstruction(int position);
 void increamentSecounRoundCounter(int inc);
-/*char *getInstructionsBinaryCode(int memoryPos);*/
 void saveInstructionAtSpecificPlace(char *instruction, int position, int memoryLocation, int length, char ARE);
+void resetInstructionTabale(void);
+void resetDataTable(void);
+void cleanDataPointer(Data *node);
+void createObjectFile(char *fileName);
+Data *getDataHead(void);
 
 
 

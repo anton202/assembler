@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "../utility/utility.h"
 #include "machineCode.h"
 #define MEMORY_START_LOCATION 100
 
@@ -19,6 +20,13 @@ void incInstructionCount(void)
     i++;
 }
 
+void resetInstructionCount(void)
+{
+    i = 0;
+    IC = MEMORY_START_LOCATION;
+    secondRunCounter = 0;
+}
+
 void printInstructionTable(void)
 {
     int c = 0;
@@ -28,11 +36,11 @@ void printInstructionTable(void)
         printf("\nMemory loation: %d binary code: ", instructionTable[c]->memoryLocation);
         for (k = 0; k < 12; k++)
         {
-           printf("%d ", instructionTable[c]->instruction[k]);
+            printf("%d ", instructionTable[c]->instruction[k]);
         }
-        
-    putchar('\n');
-      
+        printf(" %c", instructionTable[c]->ARE);
+
+        putchar('\n');
     }
 }
 
@@ -84,22 +92,49 @@ int addInstructionToInstructionTable(Instruction *inst)
     return 0;
 }
 
-/*char *getInstructionsBinaryCode(int memoryPos)
-{
-    int j;
-    for (j = 0; j < i; j++)
-    {
-        if (instructionTable[j]->memoryLocation == memoryPos)
-        {
-            return instructionTable[j]->instruction;
-        }
-    }
-    return NULL;
-}*/
-
 void saveInstructionAtSpecificPlace(char *instruction, int position, int memoryLocation, int length, char ARE)
 {
     instructionTable[position] = createInstruction(instruction, memoryLocation, length, ARE);
-    printf("\ninside save instructaion at specific place: position: %d\n",position);
+}
 
+void resetInstructionTabale(void)
+{
+    int j = 0;
+    for (; j < i; j++)
+    {
+
+        free(instructionTable[j]);
+    }
+
+    resetInstructionCount();
+}
+
+void createObjectFile(char *fileName)
+{
+    Data *node = getDataHead();
+    int k = 0;
+    FILE *fp;
+    char *instruction;
+    char ARE;
+    int memoryLocation;
+
+    fp = fopen(addExtentitonToFileName(fileName,".ob"), "w");
+    fprintf(fp,"\t%d %d\n",i,getDataCount());
+
+    for (; k < i; k++)
+    {
+        instruction = instructionTable[k]->instruction;
+        memoryLocation = instructionTable[k]->memoryLocation;
+        ARE = instructionTable[k]->ARE;
+
+        fprintf(fp,"0%d %s %c\n",memoryLocation,converBinaryToHex(instruction),ARE);
+    }
+
+    while (node != NULL)
+    {
+        fprintf(fp,"0%d %s %c\n",node->memoryLocatin,converBinaryToHex(node->data),node->ARE);
+        node = node->next;
+    }
+    
+    fclose(fp);
 }
