@@ -248,7 +248,7 @@ int readAndSaveString(char *line, int *lineIndex, int lineNmber)
     {
         if (c == '\0')
         {
-            printf("line number: %d Erorr: string argument must end with: \n", lineNmber);
+            printf("line number: %d Erorr: string argument must end with:\" \n", lineNmber);
             return 0;
         }
 
@@ -278,7 +278,7 @@ int readAndSaveStringDirective_data(char *line, int *lineIndex, int lineNumber)
     {
         if (isNotSpace(line, lineIndex))
         {
-            printf("number line: %d Error: only one argument allowed for .string", lineNumber);
+            printf("\nnumber line: %d Error: only one argument allowed for .string\n", lineNumber);
             return 0;
         }
     }
@@ -444,7 +444,7 @@ Operands *handleTwoOperandsOperations(char *operationName, char *line, int *line
 
     if (*(line + i) != ',')
     {
-        printf("line number: %d Error: There must be a semicolon betwen two arguments", lineNumber);
+        printf("\nline number: %d Error: There must be a semicolon betwen two arguments\n", lineNumber);
         free(operands);
         return NULL;
     }
@@ -553,7 +553,7 @@ Operands *readFirstOperand(char *operationName, Operands *operands, char *line, 
     }
     else
     {
-        printf("line number: %d Error: %s is not a ligal operand for %s", lineNumber, opName, operationName);
+        printf("\nline number: %d Error: %s is not a ligal operand for %s\n", lineNumber, opName, operationName);
         return NULL;
     }
 
@@ -588,7 +588,7 @@ Operands *readSecondOperand(char *operationName, Operands *operands, char *line,
     }
     else
     {
-        printf("line number: %d Error: %s is not a ligal operand for %s", lineNumber, opName, operationName);
+        printf("\nline number: %d Error: %s is not a ligal operand for %s\n", lineNumber, opName, operationName);
         return NULL;
     }
 
@@ -822,4 +822,127 @@ int relativeOperand(int instructionValue, char *symbol, int lineNumber)
         return -1;
     }
     return savedSymbol->value - (instructionValue + 1);
+}
+
+int firstRun(char *line, int lineNumber)
+{
+    int lineIndex = 0;
+    int isDataDirective;
+    Operands *operands;
+    int symbolDecleration = 0;
+    char *symbol, *operationName;
+
+    if (commentLine(line) || emptyLine(line, &lineIndex))
+    {
+        return 1;
+    }
+
+    symbol = isSymbol(line, &lineIndex);
+    if (symbol != NULL)
+    {
+        symbolDecleration = 1;
+    }
+
+    isDataDirective = checkIfDataDirective(line, &lineIndex);
+
+    if (!isDataDirective || isDataDirective == 1)
+    {
+        if (symbolDecleration)
+        {
+            if (!isSymbolValid(symbol, lineNumber) && isRegisterName(symbol, lineNumber) && isSymbolDefined(symbol, lineNumber))
+            {
+                return 0;
+            }
+            else
+            {
+                insertSymbol(createSymbol(symbol, getDataCount(), "data", "\0"));
+            }
+        }
+    }
+
+    if (!isDataDirective)
+    {
+        return readAndSaveDataDirective_Data(line, &lineIndex, lineNumber);
+    }
+    else if (isDataDirective == 1)
+    {
+        return readAndSaveStringDirective_data(line, &lineIndex, lineNumber);
+    }
+    else if (isDataDirective == 2)
+    {
+        return readAndSaveExternalSymbol(line, &lineIndex, lineNumber);
+    }
+    else if (isDataDirective == 3)
+    {
+        return 1;
+    }
+
+    /* so if no .data, .string, .extern, .entry then it is an instruction line*/
+
+    if (symbolDecleration)
+    {
+        if (!saveInstructionLineSymbol(symbol, lineNumber))
+        {
+            return 0;
+        }
+    }
+
+    /*get operation name and check if valid*/
+    operationName = getOperationName(line, &lineIndex);
+    if (searchOpperation(operationName) == NULL)
+    {
+        printf("\nline number: %d Error: operation %s is iligal operation.\n", lineNumber, operationName);
+        return 0;
+    }
+
+    if (strcmp("rts", operationName) != 0 && strcmp("stop", operationName) && *(line + lineIndex) != ' ' && *(line + lineIndex) != '\t')
+    {
+        printf("line number: %d Error: There must be at least one space betwen an operation name and the first argument", lineNumber);
+        return 0;
+    }
+
+    while (isspace(*(line + lineIndex)))
+    {
+        lineIndex++;
+    }
+
+    operands = readAndCodeOperands(operationName, line, &lineIndex, lineNumber);
+
+    if (operands == NULL)
+    {
+        return 0;
+    }
+
+    saveFirstWord(createFirstWord(operationName, operands), operands);
+    saveAdditionalWord(operands->sourceOpAddresingMode, operands->sourceOpBinaryCode);
+    saveAdditionalWord(operands->destenationOpAddressongMode, operands->destenationOpBinaryCode);
+    free(operands);
+
+    return 1;
+}
+
+int secondRun(char *line, int lineNumber)
+{
+    int lineIndex = 0;
+    int whichDirective;
+
+    if (commentLine(line) || emptyLine(line, &lineIndex))
+    {
+        return 1;
+    }
+
+    /*skips symbol declaration*/
+    isSymbol(line, &lineIndex);
+    whichDirective = checkIfDataDirective(line, &lineIndex);
+
+    if (!whichDirective || whichDirective == 1 || whichDirective == 2)
+    {
+        return 1;
+    }
+    else if (whichDirective == 3)
+    {
+        return readAndSaveEntryDirectiveSymbol(line, &lineIndex, lineNumber);
+    }
+
+    return readAndCodeSymbolOperands(line, &lineIndex, lineNumber);
 }

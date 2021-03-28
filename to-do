@@ -1,8 +1,0 @@
-
-have an issue with number opperand in readFirstOperand function.
-    the function that reaads the number opperand returns a number in to the if statment wich is an issue
-
-
-
-Maybe if enough time:
-create header file with all the saved words in the given assembly.

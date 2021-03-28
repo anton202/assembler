@@ -15,7 +15,7 @@ int readLine(char *arr, FILE *fp, int lineNum)
     {
         if (lineLength == LINE_LENGTH)
         {
-            printf("Error: line %d is to long. max line length is 80 charecters\n", lineNum);
+            printf("\nError: line %d is to long. max line length is 80 charecters\n", lineNum);
             *arr = '\0';
             while ((c = getc(fp)) != '\n' && c != EOF)
                 ;
